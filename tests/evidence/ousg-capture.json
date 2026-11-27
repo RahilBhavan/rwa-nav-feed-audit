@@ -1,0 +1,85 @@
+{
+  "receipts": {
+    "index.html": {
+      "url": "https://app.ondo.finance/legal-documentation/us?month=2026-11",
+      "sha256": "f509cba5bc1c1caa12f2dc512b00040fc3d84367e92837ad6201193c48034653",
+      "fetched_at_utc": "2026-11-27T03:57:40.102729+00:00"
+    },
+    "chart.html": {
+      "url": "https://ondo.finance/ousg",
+      "sha256": "95227d129b96059aa37714559b16c31c62df54af4d6897f4236829f4c6a87133",
+      "fetched_at_utc": "2026-11-27T03:57:40.455503+00:00"
+    },
+    "ousg-2026-11-06.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/55e48b991caedbd83c366263f284af541c467d07.pdf",
+      "sha256": "5bf351da86cf2e049ce9a0b2c03639ba30ce02b88547333f63cfa41e23cfa485",
+      "fetched_at_utc": "2026-11-27T03:57:40.709135+00:00"
+    },
+    "ousg-2026-11-09.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/82a43c58d0c12d046c82e4ca2d0771dec4204ea4.pdf",
+      "sha256": "cb2dd50d1f34650b29c4ea5e94828329cb3c7e578a2cb7971b6be1eeb0a1780a",
+      "fetched_at_utc": "2026-11-27T03:57:41.130534+00:00"
+    },
+    "ousg-2026-11-10.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/e312aaf5c860e09bc1638d32ab2222a0f4785d7b.pdf",
+      "sha256": "f0a29a9450bfa87ba3f39dd08c4945dcf20fa46952d43db8ef05161f47a63001",
+      "fetched_at_utc": "2026-11-27T03:57:41.539001+00:00"
+    },
+    "ousg-2026-11-11.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/60a6a1cd41543bd9f5111ded6664c8883a765d4e.pdf",
+      "sha256": "a28c968af3332cf8f3a9e9baa33d3212507e8d2ebab59ae09db412f7830ff895",
+      "fetched_at_utc": "2026-11-27T03:57:41.957449+00:00"
+    },
+    "ousg-2026-11-12.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/c05a4cef38db4decf634562cf5f3440114516fd2.pdf",
+      "sha256": "b3f17860fbd0184830b50a122e5a1d58649fd9776cb858b884aa7a3bfe03f9e4",
+      "fetched_at_utc": "2026-11-27T03:57:42.365964+00:00"
+    },
+    "ousg-2026-11-13.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/3cd5c5c3fd6ddd18fdcc88b25b8e0e9d326c6357.pdf",
+      "sha256": "ea3814ab224e183be6c538511fb01de4268675ef111edf4a70bd20bbd96ac396",
+      "fetched_at_utc": "2026-11-27T03:57:42.794549+00:00"
+    },
+    "ousg-2026-11-16.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/50bbf6fa5dd4e971a5627e84376d74ad1394ef4c.pdf",
+      "sha256": "b2a8e4a8d44e700822d40075f2fa5705e1cf01834d7fd921d8af899f773e2367",
+      "fetched_at_utc": "2026-11-27T03:57:43.202002+00:00"
+    },
+    "ousg-2026-11-17.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/b5406150ae2ddd3aa144a9d7058a39def2e692f6.pdf",
+      "sha256": "cccf37edc5d228e05573d0690153d8cc1c0c8e8e6890084bb2bab09ee4aa5adf",
+      "fetched_at_utc": "2026-11-27T03:57:43.622433+00:00"
+    },
+    "ousg-2026-11-18.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/7edfc28ba6d4d2f5d241b4b32a0b5d1523e89aae.pdf",
+      "sha256": "7d330ed9f0eeedf7a6a39e12ba84f84b5512b6cf36e27ab5d21319869a22ae16",
+      "fetched_at_utc": "2026-11-27T03:57:44.032793+00:00"
+    },
+    "ousg-2026-11-19.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/5283a38e5f9beffb12357aef28487d163291869f.pdf",
+      "sha256": "ab7c5612c94b2f03451d7cb367f56dc598d09cde5e9a6d2d8dbd416a7e03e1c4",
+      "fetched_at_utc": "2026-11-27T03:57:44.461058+00:00"
+    },
+    "ousg-2026-11-20.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/a9eec2399ec7e7c7b36ece97c6131cbd85a595d2.pdf",
+      "sha256": "6a0ac92f4729b5cbe04b678b85dfd5530722117b25c5e437bd7d9143f0e9d1c7",
+      "fetched_at_utc": "2026-11-27T03:57:44.902674+00:00"
+    },
+    "ousg-2026-11-23.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/bc2bd74231d48e1f89307293cc20364f622aed00.pdf",
+      "sha256": "d9504b5b008c9455a7f4afd18dd964b5fc8fac30aa11b0565772a2b0a63cba69",
+      "fetched_at_utc": "2026-11-27T03:57:45.316360+00:00"
+    },
+    "ousg-2026-11-24.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/316ce1a9116ac54b223b734013878cf2f92b8c0c.pdf",
+      "sha256": "d2df715bbc4556ce2881f62b2e87e4f62addae9eef638fa56dfcfc4823620ef8",
+      "fetched_at_utc": "2026-11-27T03:57:45.728532+00:00"
+    },
+    "ousg-2026-11-25.pdf": {
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/28c3c5394db20f966521293da7856b4cb849c74c.pdf",
+      "sha256": "14f17eaf9d6d10235129fd4d1810a54f00fb3be7b9d1aeb0007f270c62528573",
+      "fetched_at_utc": "2026-11-27T04:00:17.700721+00:00"
+    }
+  },
+  "chart_pairs_sha256": "08f585b82022f70b55452ebcca1b66717af4a351d3dd86d18b4a7173dc4dd25b"
+}

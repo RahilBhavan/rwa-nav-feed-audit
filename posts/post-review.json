@@ -1,0 +1,67 @@
+{
+  "stage": "draft",
+  "editorial_independent_review": "pending",
+  "source_independent_review": "pending",
+  "preflight_method": "X Growth preflight on exact body text, plus local validation of GitHub Results anchors",
+  "copy_file": "DRAFTS.md",
+  "copy_file_sha256": "68ce2c12c27b1e63e2e305d88c1897eeccfaf03f1404cd4f7763bf321bff9b14",
+  "standalone_chart": {
+    "file": "../docs/ustb-gap.svg",
+    "sha256": "b06cb56011bbf1c77e2ae39a69250790fef9677e0b55447744c0a6cdf2f23f86",
+    "visible_words": 19,
+    "inspected_widths_px": [
+      342,
+      680
+    ]
+  },
+  "drafts": [
+    {
+      "title": "Typical timing",
+      "observation": "2024-06-27/2026-11-26",
+      "basis": "584 of 593 changed active-proxy answers",
+      "limit": "One NYSE session from the matched issuer date label. Issuer publication time unknown.",
+      "evidence": "https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#update-timing-and-intervals",
+      "copy_sha256": "871d9e7b131eab69dae9f40abbc8024256915f7105c8e227e92bee80fbf74ed4",
+      "preflight": {
+        "result": "PASS",
+        "findings": []
+      }
+    },
+    {
+      "title": "The Friday NAV",
+      "observation": "2026-10-03/2026-10-04",
+      "basis": "10,000 × (11.231053 − 11.232233) / 11.232233",
+      "limit": "Retrospective UTC-close comparison with the same-date issuer label.",
+      "evidence": "https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#daily-gaps",
+      "copy_sha256": "2c7722be15ae0a5cd0113cbc176a8b2b0e3fa7a1296e8dbec0b4eaccf48f3699",
+      "preflight": {
+        "result": "PASS",
+        "findings": []
+      }
+    },
+    {
+      "title": "Veterans Day",
+      "observation": "2025-11-11",
+      "basis": "10,000 × (10.884770 − 10.888154) / 10.888154",
+      "limit": "Retrospective UTC-close comparison with the same-date issuer label.",
+      "evidence": "https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#daily-gaps",
+      "copy_sha256": "43b5a1ec1d0dff2e248ca40d3e262a3b8ecd7738fcc0693ff3d7af7d7987732e",
+      "preflight": {
+        "result": "PASS",
+        "findings": []
+      }
+    },
+    {
+      "title": "September month-end",
+      "observation": "2026-09-30",
+      "basis": "Phase 2 round 817, 2026-10-01T13:17:35+00:00",
+      "limit": "Onchain time from updatedAt. The issuer label supplies no publication time.",
+      "evidence": "https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#month-end",
+      "copy_sha256": "e522d864deebfc353a31d0c8cb036dae5c48bf5c044945a22bf6c2a56063fe3e",
+      "preflight": {
+        "result": "PASS",
+        "findings": []
+      }
+    }
+  ]
+}

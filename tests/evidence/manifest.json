@@ -51,7 +51,8 @@
               "observation": "2026-10-05",
               "value": "11.23554700"
             }
-          ]
+          ],
+          "valuation_basis": "issuer-published fund NAV"
         },
         {
           "url": "https://api.superstate.com/v1/funds/1/nav-daily?start_date=2026-11-20&end_date=2026-11-26",
@@ -96,7 +97,8 @@
               "observation": "2026-11-26",
               "value": "11.29144100"
             }
-          ]
+          ],
+          "valuation_basis": "issuer-published fund NAV"
         }
       ]
     },
@@ -226,7 +228,16 @@
             }
           ]
         }
-      ]
+      ],
+      "note_reference": {
+        "unit": "USD/token principal",
+        "observations": {
+          "2025-05-02": "1.088693",
+          "2025-05-05": "1.089066",
+          "2025-05-06": "1.089190",
+          "2025-05-09": "1.089563"
+        }
+      }
     },
     "BENJI": {
       "status": "usable",
@@ -242,7 +253,21 @@
           "fixture": "benji-2026-09.xml",
           "fixture_kind": "XML extract, class NAV plus series/report IDs",
           "sha256": "9cadfabbe13dc32a552f0f232278d7533e40b13a9a68d0eb626e0e2253c3d6b8",
-          "original_sha256": "ab64fc4b57d95efbfcc476cff6b6111fc522ab96d1edbb27fb5cc00f0d5610ca"
+          "original_sha256": "ab64fc4b57d95efbfcc476cff6b6111fc522ab96d1edbb27fb5cc00f0d5610ca",
+          "valuation_basis": "issuer-filed market-based fund NAV",
+          "filing": {
+            "accession": "0002071691-26-023634",
+            "period": "2026-09-30",
+            "accepted_et": "2026-10-06 15:46:56",
+            "url": "https://www.sec.gov/Archives/edgar/data/1786958/000207169126023634/0002071691-26-023634-index.htm"
+          },
+          "generic_access_probe": {
+            "accessed_utc_date": "2026-11-27",
+            "request_spacing_seconds": 1.1,
+            "user_agent": "rwa-nav-feed-audit/1.0",
+            "index_http_status": 403,
+            "xml_http_status": 403
+          }
         },
         {
           "url": "https://www.sec.gov/Archives/edgar/data/1786958/000207169126025490/primary_doc.xml",
@@ -253,7 +278,14 @@
           "fixture": "benji-2026-10.xml",
           "fixture_kind": "XML extract, class NAV plus series/report IDs",
           "sha256": "aeee15d55cfa70c96e6a17929678aac893c35b7ab1b422747a451ead327cab9c",
-          "original_sha256": "04ee3848c6b56270a4efe60b1045e02bd62663216a70e69cccf7880e906b025e"
+          "original_sha256": "04ee3848c6b56270a4efe60b1045e02bd62663216a70e69cccf7880e906b025e",
+          "valuation_basis": "issuer-filed market-based fund NAV",
+          "filing": {
+            "accession": "0002071691-26-025490",
+            "period": "2026-10-31",
+            "accepted_et": "2026-11-06 11:20:09",
+            "url": "https://www.sec.gov/Archives/edgar/data/1786958/000207169126025490/0002071691-26-025490-index.htm"
+          }
         }
       ]
     }
@@ -279,29 +311,47 @@
     }
   ],
   "usdy_archive": {
-    "url": "https://ondo.finance/usdy",
+    "url": "https://app.ondo.finance/assets/usdy",
     "hash_accessed": "2026-11-27",
     "members": [
       {
         "member": "2025/05 May/Ondo USDY LLC_ATCAttest_250502.pdf",
         "download": "usdy-2025-05-02.pdf",
-        "sha256": "1a43225da85de51396378f578bf7f4a9b1ee6d51dd8faa798fe00e7ca34c3cfb"
+        "sha256": "1a43225da85de51396378f578bf7f4a9b1ee6d51dd8faa798fe00e7ca34c3cfb",
+        "ethereum_end_of_date_block": 22399543,
+        "ethereum_end_of_date_hash": "0x8cf12db79af836ccc19293b9abf87d1e44f3d451395f98a676a786f302922f29"
       },
       {
         "member": "2025/05 May/Ondo USDY LLC_ATCAttest_250505.pdf",
         "download": "usdy-2025-05-05.pdf",
-        "sha256": "a3a4e9d9a467d65d47ea5678d13f354e2e4aade1f3b9af3320bf1f165ee5ee42"
+        "sha256": "a3a4e9d9a467d65d47ea5678d13f354e2e4aade1f3b9af3320bf1f165ee5ee42",
+        "ethereum_end_of_date_block": 22420967,
+        "ethereum_end_of_date_hash": "0x4f2b7f87b050fd406f59e143deb079cb148e1869b445c10dccbf4c12b28ec40e"
       },
       {
         "member": "2025/05 May/Ondo USDY LLC_ATCAttest_250506.pdf",
         "download": "usdy-2025-05-06.pdf",
-        "sha256": "5e33309517b4f36de773c9c7223128f03f8617e927b181fd55b66d751fbcee1a"
+        "sha256": "5e33309517b4f36de773c9c7223128f03f8617e927b181fd55b66d751fbcee1a",
+        "ethereum_end_of_date_block": 22428091,
+        "ethereum_end_of_date_hash": "0xaefc1edff4feac7f07f5ff0acb1e8a847600326a461ee2831baa2a42a609206f"
       },
       {
         "member": "2025/05 May/Ondo USDY LLC_ATCAttest_250509.pdf",
         "download": "usdy-2025-05-09.pdf",
-        "sha256": "38c527c94493322fb9f510ce03383b03192a3b2ec9bf91e72cc814e5b58becdf"
+        "sha256": "38c527c94493322fb9f510ce03383b03192a3b2ec9bf91e72cc814e5b58becdf",
+        "ethereum_end_of_date_block": 22449297,
+        "ethereum_end_of_date_hash": "0x4d6c901c1261f34f46e243d6385331ffb9e959d054e4080cb726b57f98edecc4"
       }
-    ]
+    ],
+    "archive_capture": {
+      "accessed_utc_date": "2026-11-27",
+      "bytes": 277253588,
+      "sha256": "12ff1fc06f753e27ea8e317dc9b483645b882aa560912f4631905219c7e0263f"
+    },
+    "oracle_capture": {
+      "source_url": "https://eth.drpc.org",
+      "fetched_at_utc": "2026-11-27T04:14:28.321280+00:00",
+      "evidence_sha256": "18ae6df50ee7f333f0fb4d7a9d1804e5ab42693da7c07c629cfd0eb76305af7d"
+    }
   }
 }

@@ -31,3 +31,9 @@ The replay records the study's selected date/value observations in a common sche
 ## 2026-11-27 — Public release
 
 Rahil selected the MIT License for the project code. Third-party filings and data retain their own terms. The public history begins with the sanitized release tree. Earlier review hashes identify local research revisions.
+
+## 2026-11-27 — Reconstruct the active proxy and preserve both comparison clocks
+
+The reviewer’s 430-round lead was a trailing window within phase 2. The pinned proxy maps two aggregators, which continued to store rounds while inactive. Adjacent block state established the switch at block 20,464,407, allowing the study to measure the active proxy across 889 observations. Keep the 920 stored-round count for fidelity and retain the trailing result for comparison. Use the same-date label at UTC close for the daily series, and the previous date label at round time for the separate update-level measure.
+
+The November Ondo document table supported 14 OUSG return pairs, including an outlier on November 24. Keep the per-unit level and exact chart provenance unresolved. BENJI uses separate filing and valuation clocks. USDY compares issuer note principal with the legacy oracle at each report-day block and cross-checks the later historical ranges. Independent Round 2 review follows implementation.

@@ -65,6 +65,14 @@ class IssuerHistoryTest(unittest.TestCase):
             },
         )
         self.assertEqual(self.report["minimum_products"], 3)
+        extracted_verified = {
+            p for p, item in self.products.items() if any(
+                s["unit"] == "USD/share" and "valuation_basis" in s
+                and len({r["observation"] for r in s["rows"]}) >= 2
+                for s in item.get("series", []))
+        }
+        self.assertEqual(extracted_verified, {"USTB", "BENJI"})
+        self.assertEqual(extracted_verified, set(self.report["gate"]["accepted"]))
         self.assertEqual(self.report["gate"], {"accepted": ["USTB", "BENJI"], "count": 2, "passed": False})
         self.assertEqual(self.report["dated_per_unit_benchmarks"],
                          {"accepted": ["USTB", "USDY", "BENJI"], "count": 3})
@@ -140,19 +148,62 @@ class LiveComparisonTest(unittest.TestCase):
 
         stdout = io.StringIO()
         with (patch.object(audit, "urlopen", side_effect=open_response) as fetch,
-              patch("sys.argv", ["issuer_history.py", "--live", "--user-agent", user_agent]),
+              patch("sys.argv", ["issuer_history.py", "--live"]),
+              patch.dict("os.environ", {"SEC_USER_AGENT": user_agent}),
+              patch.object(audit.time, "sleep"),
               redirect_stdout(stdout)):
             exit_status = audit.main()
         self.assertEqual(fetch.call_count, len(self.responses))
         return exit_status, json.loads(stdout.getvalue())
 
-    def test_cli_requires_edgar_contact_opt_in(self):
-        with (patch.object(audit, "urlopen", side_effect=AssertionError("unexpected network request")),
-              patch("sys.argv", ["issuer_history.py", "--live"]),
-              patch("sys.stderr", new_callable=io.StringIO)):
-            with self.assertRaises(SystemExit) as error:
-                audit.main()
-        self.assertEqual(error.exception.code, 2)
+    def test_cli_skips_edgar_without_opt_in(self):
+        for source in self.products["BENJI"]["series"]:
+            del self.responses[source["url"]]
+        status, result = self.run_live(user_agent="")
+        self.assertEqual(status, 0)
+        self.assertFalse(result["live_verification"]["passed"])
+        self.assertEqual(len(result["live_verification"]["skipped_sources"]), 2)
+        source = result["products"]["BENJI"]["series"][0]
+        self.assertEqual(source["fetch_status"], "skipped")
+        self.assertIn("SEC_USER_AGENT", source["remedy"])
+        self.assertEqual(len(source["rows"]), 21)
+
+    def test_source_size_cap(self):
+        with patch.object(audit, "urlopen", return_value=io.BytesIO(b"abcd")), patch.object(audit, "LIMIT", 3):
+            with self.assertRaisesRegex(ValueError, "2 MB request limit"):
+                audit.read_source("https://example.org", audit.USER_AGENT)
+
+    def test_edgar_index_identifiers_and_time(self):
+        source = self.products["BENJI"]["series"][0]
+        filing = source["filing"]
+        raw = (
+            f'{filing["accession"]} N-MFP3 S000067043 C000215714 FOBXX {filing["period"]}'
+            f'<div>Accepted</div> <div class="info">{filing["accepted_et"]}</div>'
+        ).encode()
+        self.assertEqual(audit.edgar_index(raw, filing), filing["accepted_et"])
+        self.assertEqual(source["filing_clock"]["days_after_report_end"], 6)
+        october = self.products["BENJI"]["series"][1]
+        self.assertEqual(october["filing_clock"]["days_after_last_valuation"], 7)
+        with self.assertRaisesRegex(ValueError, "acceptance differs"):
+            audit.edgar_index(raw.replace(b"15:46:56", b"15:46:55"), filing)
+
+    def test_live_index_replay_checks_identity_and_hashes_bytes(self):
+        for source in self.products["BENJI"]["series"]:
+            filing = source["filing"]
+            self.responses[filing["url"]] = (
+                f'{filing["accession"]} N-MFP3 S000067043 C000215714 FOBXX {filing["period"]}'
+                f'<div>Accepted</div><div>{filing["accepted_et"]}</div>'
+            ).encode()
+        with (patch.object(audit, "read_source", side_effect=lambda url, _: self.responses[url]),
+              patch.object(audit.time, "sleep") as sleep,
+              patch.object(audit.time, "monotonic", return_value=0)):
+            result = audit.replay(live=True, user_agent="Synthetic test caller", verify_indices=True)
+        self.assertTrue(result["live_verification"]["passed"])
+        self.assertEqual(sleep.call_count, 3)
+        self.assertTrue(all(c.args[0] >= 1 for c in sleep.call_args_list))
+        for source in result["products"]["BENJI"]["series"]:
+            digest = audit.hashlib.sha256(self.responses[source["filing"]["url"]]).hexdigest()
+            self.assertEqual(source["index"]["response_sha256"], digest)
 
     def test_match_and_rolling_refresh(self):
         url = self.source("USYC")
@@ -183,10 +234,13 @@ class LiveComparisonTest(unittest.TestCase):
         self.assertEqual(rolling["rolling_window"]["end"], "2026-12-07")
         self.assertEqual(len(rolling["rows"]), 3)
         self.assertEqual(rolling["fetch_status"], "ok")
+        self.assertEqual(rolling["full_response"]["rows"], 4)
         self.assertNotIn("comparison", rolling)
         september, = report["products"]["BENJI"]["series"][:1]
         self.assertEqual(september["comparison"]["status"], "match")
         self.assertEqual(september["comparison"]["pinned_count"], 21)
+        self.assertFalse(september["bytes_match"])  # The stub is a filing excerpt.
+        self.assertEqual(september["full_response"]["distinct_labels"], 21)
 
     def test_preserves_results_across_source_errors(self):
         sec = self.source("BENJI")
@@ -211,6 +265,8 @@ class LiveComparisonTest(unittest.TestCase):
                 source = products[product]["series"][0]
                 self.assertEqual(source["fetch_status"], "error")
                 self.assertIn(message, source["error"]["message"])
+        self.assertEqual(products["BENJI"]["series"][0]["error"]["http_status"], 403)
+        self.assertIn("fair-access", products["BENJI"]["series"][0]["error"]["remedy"])
         self.assertEqual(products["BENJI"]["series"][1]["comparison"]["status"], "match")
         self.assertEqual(products["USDY"]["series"][0]["comparison"]["status"], "match")
 

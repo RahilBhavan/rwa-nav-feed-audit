@@ -1,0 +1,71 @@
+{
+  "activation_sha256": "e0ea21a726860beed1711b7c1f70f2e5944bfdaf8acc86a111e5dd583f837908",
+  "block": {
+    "block": 26503879,
+    "block_hash": "0x4763fd004596f13e42369a95222159fa52ccd36db8925d324d86631625e6249f",
+    "block_timestamp": 1795750391,
+    "proxy": "0x289b5036cd942e619e1ee48670f98d214e745aac"
+  },
+  "chain_sha256": "da192d935aea4796291d0e5da40688a9918f0fce73dcd4a8f748e920a2154bb7",
+  "heartbeat": 95400,
+  "labels_sha256": "64f2daca02e04db3fc787240d454c91089a8cee810e630c6b9732bd43eda3c96",
+  "phases": [
+    {
+      "active_rounds": 40,
+      "aggregator": "0x0bcca5ed4c22b528a29a14fdec6d5b9b9419609e",
+      "decimals": 6,
+      "description": "USTB NAV per Share",
+      "ended_utc": "2024-09-09T19:41:47+00:00",
+      "phase": 1,
+      "rounds": 46,
+      "started_utc": "2024-06-27T18:59:11+00:00"
+    },
+    {
+      "active_rounds": 849,
+      "aggregator": "0xd5bc4e3c7e77a5776fd9d0dde8471b8b4aec10f5",
+      "decimals": 6,
+      "description": "USTB NAV per Share",
+      "ended_utc": "2026-11-26T16:44:23+00:00",
+      "phase": 2,
+      "rounds": 874,
+      "started_utc": "2024-07-12T08:00:11+00:00"
+    }
+  ],
+  "provenance": {
+    "marketHours": "NYSE",
+    "porAuditor": "Superstate",
+    "porSource": "Asset Manager API"
+  },
+  "receipts": {
+    "activation.json": {
+      "fetched_at_utc": "2026-11-27T04:04:09.880334+00:00",
+      "sha256": "e0ea21a726860beed1711b7c1f70f2e5944bfdaf8acc86a111e5dd583f837908",
+      "url": "https://eth.drpc.org"
+    },
+    "chain.json": {
+      "fetched_at_utc": "2026-11-27T04:01:05.238705+00:00",
+      "sha256": "da192d935aea4796291d0e5da40688a9918f0fce73dcd4a8f748e920a2154bb7",
+      "url": "https://eth.drpc.org"
+    },
+    "directory.json": {
+      "fetched_at_utc": "2026-11-27T04:00:53.646041+00:00",
+      "sha256": "00566b28c0be010b5f9d7e1d87f3ee83a343075ecda332e280405cb74aa7a93c",
+      "url": "https://reference-data-directory.vercel.app/feeds-mainnet.json"
+    },
+    "financials.json": {
+      "fetched_at_utc": "2026-11-27T04:00:54.503435+00:00",
+      "sha256": "489fde48662aecf6f7c6851a05654a99e7a57a9a15da4b2deb2e33427054432b",
+      "url": "https://api.superstate.com/v3/funds/USTB/financials"
+    },
+    "fund.json": {
+      "fetched_at_utc": "2026-11-27T04:00:53.741141+00:00",
+      "sha256": "c5de50f1a9a4536922b435d5cbb9a42e9f1bcf6461f5eb5dc7d14a6da9257c9a",
+      "url": "https://api.superstate.com/v3/funds/USTB"
+    },
+    "issuer.json": {
+      "fetched_at_utc": "2026-11-27T04:00:53.488679+00:00",
+      "sha256": "56f5db7746b8df629baeaa6f76ee7f952772584d936ef243c2ac16e9cc11ae31",
+      "url": "https://api.superstate.com/v1/funds/1/nav-daily"
+    }
+  }
+}

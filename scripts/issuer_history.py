@@ -2,12 +2,16 @@
 import argparse
 import hashlib
 import json
+import os
 import re
+import time
 import xml.etree.ElementTree as ET
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from http.client import HTTPException
 from pathlib import Path
+from urllib.error import HTTPError
+from zoneinfo import ZoneInfo
 from urllib.request import Request, urlopen
 
 EVIDENCE = Path(__file__).resolve().parents[1] / "tests" / "evidence"
@@ -28,8 +32,11 @@ def ustb_rows(raw):
 def benji_rows(raw):
     form = ET.fromstring(raw)
     info = form.find("m:formData/m:generalInfo", NMFP)
-    check(info.findtext("m:seriesId", namespaces=NMFP) == "S000067043", "wrong Franklin series")
-    report_date = date.fromisoformat(info.findtext("m:reportDate", namespaces=NMFP))
+    check(info is not None and info.findtext("m:seriesId", namespaces=NMFP) == "S000067043",
+          "wrong Franklin series")
+    report_label = info.findtext("m:reportDate", namespaces=NMFP)
+    check(bool(report_label), "missing EDGAR report date")
+    report_date = date.fromisoformat(report_label)
     share_class, = [
         item for item in form.findall("m:formData/m:classLevelInfo", NMFP)
         if item.findtext("m:classesId", namespaces=NMFP) == "C000215714"
@@ -37,8 +44,10 @@ def benji_rows(raw):
     rows = []
     for row in share_class.findall("m:dailyNetAssetValuePerShareClass", NMFP):
         day = row.findtext("m:dailyNetAssetValuePerShareDateClass", namespaces=NMFP)
-        check(day[:7] == report_date.isoformat()[:7], "row outside the report month")
-        rows.append((day, row.findtext("m:dailyNetAssetValuePerShareClass", namespaces=NMFP)))
+        value = row.findtext("m:dailyNetAssetValuePerShareClass", namespaces=NMFP)
+        check(day and day[:7] == report_date.isoformat()[:7], "row outside the report month")
+        check(value and re.fullmatch(r"[0-9]+\.[0-9]{4}", value), "invalid EDGAR NAV precision")
+        rows.append((day, value))
     return rows
 
 
@@ -51,9 +60,13 @@ def ondo_chart(raw, product):
     ]
     payload = "\n".join(payloads)
     decoder = json.JSONDecoder(parse_float=Decimal)
-    asset, _ = decoder.raw_decode("{" + payload.split('"assetData":{', 1)[1])
+    _, asset_marker, asset_payload = payload.partition('"assetData":{')
+    check(bool(asset_marker), "missing Ondo assetData")
+    asset, _ = decoder.raw_decode("{" + asset_payload)
     check(asset["symbol"] == product.lower(), "wrong Ondo product")
-    history, _ = decoder.raw_decode(payload.split('"history":', 1)[1])
+    _, history_marker, history_payload = payload.partition('"history":')
+    check(bool(history_marker), "missing Ondo history")
+    history, _ = decoder.raw_decode(history_payload)
     return [(row["timestamp"], row["asset"]["priceUsd"]) for row in history]
 
 
@@ -128,29 +141,75 @@ def compare_rows(pinned, live):
     }
 
 
-def replay(live=False, user_agent=None):
+def summarize(rows):
+    labels = sorted({label for label, _ in rows})
+    return dict(rows=len(rows), distinct_labels=len(labels),
+                first=labels[0] if labels else None, last=labels[-1] if labels else None)
+
+
+def edgar_index(raw, filing):
+    text = raw.decode()
+    for item in (filing["accession"], "N-MFP3", "S000067043", "C000215714", "FOBXX", filing["period"]):
+        check(item in text, f"EDGAR filing index missing {item}")
+    match = re.search(r'>Accepted</div>\s*<div[^>]*>([0-9 :\-]+)</div>', text)
+    check(match and match[1] == filing["accepted_et"], "EDGAR acceptance differs from reference index")
+    return match[1]
+
+
+def filing_clock(filing, rows):
+    accepted = datetime.fromisoformat(filing["accepted_et"]).replace(tzinfo=ZoneInfo("America/New_York"))
+    period = date.fromisoformat(filing["period"])
+    return dict(accepted_et=accepted.isoformat(), accepted_utc=accepted.astimezone(timezone.utc).isoformat(),
+                days_after_report_end=(accepted.date()-period).days,
+                days_after_last_valuation=(accepted.date()-date.fromisoformat(rows[-1]["observation"])).days,
+                reported_distinct_values=len({Decimal(row["value"]) for row in rows}))
+
+
+def replay(live=False, user_agent=None, verify_indices=False):
     manifest = json.loads((EVIDENCE / "manifest.json").read_bytes())
     manifest["mode"] = "live" if live else "offline"
     if live:
-        check(bool(user_agent and user_agent.strip()), "live comparison requires genuine EDGAR request identification")
         manifest["pinned_accessed"] = manifest["accessed"]
         manifest["accessed"] = datetime.now(timezone.utc).date().isoformat()
     failures = []
+    skipped = []
+    sec_last_request = None
+
+    def sec_read(url):
+        nonlocal sec_last_request
+        if sec_last_request is not None:
+            time.sleep(max(0, 1.05 - (time.monotonic() - sec_last_request)))
+        sec_last_request = time.monotonic()
+        return read_source(url, user_agent)
     accepted = []
     benchmarks = []
     for product, record in manifest["products"].items():
+        eligible = False
         for source in record.get("series", []):
             start, end = source["start"], source["end"]
             try:
                 pinned = pinned_rows(source, product)
                 check(len({row["observation"][:10] for row in pinned}) >= 2,
                       "need multiple pinned observation dates")
+                source["rows"] = pinned
+                eligible = eligible or (source["unit"] == "USD/share" and bool(source.get("valuation_basis")))
+                if "filing" in source:
+                    source["filing_clock"] = filing_clock(source["filing"], pinned)
                 if not live:
-                    source["rows"] = pinned
+                    continue
+                if product == "BENJI" and not (user_agent and user_agent.strip()):
+                    source.update(fetch_status="skipped", remedy=(
+                        "Set SEC_USER_AGENT to genuine organization identification and an authorized "
+                        "nonpersonal contact to opt in to live EDGAR verification."
+                    ))
+                    skipped.append(source["url"])
                     continue
 
-                source_user_agent = user_agent if product == "BENJI" else USER_AGENT
-                rows = extract(read_source(source["url"], source_user_agent), product)
+                raw = sec_read(source["url"]) if product == "BENJI" else read_source(source["url"], USER_AGENT)
+                digest = hashlib.sha256(raw).hexdigest()
+                source.update(response_sha256=digest, bytes_match=digest == source["original_sha256"])
+                rows = extract(raw, product)
+                source["full_response"] = summarize(rows)
                 if product == "USYC":
                     latest = sorted(rows, key=lambda row: row[0], reverse=True)[:3]
                     check(len(latest) == 3, "need three rolling USYC reports")
@@ -164,23 +223,39 @@ def replay(live=False, user_agent=None):
                     if comparison["status"] != "match":
                         failures.append(source["url"])
                 source["fetch_status"] = "ok"
-            except (OSError, HTTPException, ValueError, KeyError, IndexError, AttributeError,
-                    TypeError, ET.ParseError, ArithmeticError) as exc:
+                if product == "BENJI" and verify_indices:
+                    try:
+                        index = sec_read(source["filing"]["url"])
+                        source["index"] = dict(response_sha256=hashlib.sha256(index).hexdigest(),
+                                               accepted_et=edgar_index(index, source["filing"]))
+                    except (OSError, HTTPException, ValueError) as exc:
+                        source["index"] = dict(error=str(exc))
+                        failures.append(source["filing"]["url"])
+            except (OSError, HTTPException, ValueError, KeyError, ET.ParseError, ArithmeticError) as exc:
                 if not live:
                     raise ValueError(f"{product} at {source['url']}: {exc}") from exc
                 source["fetch_status"] = "error"
                 source["error"] = {"type": type(exc).__name__, "message": str(exc)}
+                if isinstance(exc, HTTPError):
+                    source["error"]["http_status"] = exc.code
+                    if product == "BENJI" and exc.code in {403, 429}:
+                        source["error"]["remedy"] = (
+                            "Read the SEC fair-access policy and verify request identification. "
+                            "Use the pinned filing excerpt for offline replay."
+                        )
                 failures.append(source["url"])
-        if record["status"] == "usable":
-            check(bool(record.get("series")), f"{product} is missing its usable series")
+        if eligible:
             accepted.append(product)
-        if record["status"] in {"usable", "note_reference_history"}:
+        note = record.get("note_reference", {})
+        if product in accepted or (note.get("unit") == "USD/token principal"
+                                   and len(note["observations"]) >= 2):
             benchmarks.append(product)
     minimum = manifest["minimum_products"]
     manifest["gate"] = {"accepted": accepted, "count": len(accepted), "passed": len(accepted) >= minimum}
     manifest["dated_per_unit_benchmarks"] = {"accepted": benchmarks, "count": len(benchmarks)}
     if live:
-        manifest["live_verification"] = {"passed": not failures, "failed_sources": failures}
+        manifest["live_verification"] = dict(passed=not failures and not skipped,
+                                             failed_sources=failures, skipped_sources=skipped)
     return manifest
 
 
@@ -188,17 +263,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--live", action="store_true",
                         help="compare live fixed windows to pinned observations and refresh rolling USYC")
-    parser.add_argument("--user-agent", help="your genuine request identification for live reads, including EDGAR contact")
+    parser.add_argument("--verify-indices", action="store_true", help="also verify EDGAR filing indices during live reads")
     args = parser.parse_args()
-    if args.live and not (args.user_agent and args.user_agent.strip()):
-        parser.error("--live requires --user-agent with your genuine EDGAR request identification and contact")
-    options = {"user_agent": args.user_agent} if args.user_agent else {}
+    if args.verify_indices and not args.live:
+        parser.error("--verify-indices requires --live")
     try:
-        report = replay(live=args.live, **options)
+        report = replay(live=args.live, user_agent=os.environ.get("SEC_USER_AGENT"),
+                        verify_indices=args.verify_indices)
     except ValueError as exc:
         parser.exit(1, f"{exc}\n")
     print(json.dumps(report, indent=2))
-    return int(args.live and not report["live_verification"]["passed"])
+    return int(args.live and bool(report["live_verification"]["failed_sources"]))
 
 
 if __name__ == "__main__":

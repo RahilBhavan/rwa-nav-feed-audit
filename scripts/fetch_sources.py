@@ -37,6 +37,7 @@ def download(source, accessed, retrieve):
     }
     if "member" in source:
         report["member"] = source["member"]
+        report["publisher_url"] = source["publisher_url"]
     try:
         raw = retrieve(source)
         if name.endswith(".pdf") and not raw.startswith(b"%PDF-"):
@@ -79,7 +80,8 @@ def main():
         try:
             with ZipFile(args.usdy_archive) as archive:
                 for member in specification["members"]:
-                    source = dict(member, url=specification["url"], hash_accessed=specification["hash_accessed"])
+                    source = dict(member, url=specification["url"], publisher_url=specification["url"],
+                                  hash_accessed=specification["hash_accessed"])
                     results.append(download(source, manifest["accessed"],
                                             lambda item: read_archive_member(archive, item)))
         except (OSError, BadZipFile):

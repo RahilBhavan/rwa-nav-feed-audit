@@ -1,33 +1,27 @@
-# X text drafts
+# X drafts
 
-Evidence links are editorial and sit outside the post text.
+Evidence links sit outside each draft. These drafts are text-only.
 
-## Benchmark availability
+## Typical timing
 
-USTB and BENJI/FOBXX cleared the issuer fund NAV screen, 2 of 6 products. The broader dated per-unit benchmark count was 3 of 6 with USDY LLC’s accrued note principal per token. Each benchmark measures a different instrument.
+From June 2024 through Nov. 26, 2026, Chainlink’s Ethereum USTB feed posted 584 of 593 changed NAVs one NYSE session after Superstate’s date label. The issuer API gives a date label. The publication time is unknown.
 
-[Gate and benchmark counts](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md) · [USDY report sources](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/SOURCES.md#usdy)
+[Round-by-round timing](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#update-timing-and-intervals)
 
-## USTB weekend dates
+## The Friday NAV
 
-Superstate’s USTB NAV history lists $11.232233 per share for Friday, Oct. 2, 2026, and both weekend dates that follow. The rows establish that the published series includes weekends. Whether USTB was revalued that weekend remains open.
+On Oct. 3–4, 2026, Chainlink’s USTB feed was 1.05 basis points below Superstate’s dated NAV. The feed still held Thursday’s value. Friday’s value appeared onchain Monday morning New York time.
 
-[Pinned USTB rows](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#sample-accepted-rows) · [Superstate sources](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/SOURCES.md#ustb)
+[Weekend comparison](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#daily-gaps)
 
-## BENJI filing precision
+## Veterans Day
 
-Franklin’s Form N-MFP3 filings report BENJI/FOBXX’s market-based NAV at $1.0000 per share on all 43 reported business days in September and October 2026. The series was flat at the filings’ four-decimal precision. Smaller moves could have rounded to the same value.
+On Veterans Day 2025, Chainlink’s Ethereum USTB feed was 3.11 basis points below Superstate’s label. The feed still showed Friday’s NAV at the end of Tuesday UTC. Monday’s value appeared onchain Wednesday.
 
-[BENJI result](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md) · [Franklin filing sources](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/SOURCES.md#benji)
+[Holiday comparison](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#daily-gaps)
 
-## USYC history provenance
+## September month-end
 
-Hashnote’s USYC history API returned 45 reports in the audit snapshot. Hashnote says the API indexes normalized onchain reports. Comparing the API with the reports it indexes would compare two views of the same data.
+Superstate’s Sept. 30, 2026 USTB NAV appeared on Ethereum at 9:17 a.m. New York time the next morning. That’s the feed’s timestamp. Superstate’s NAV history gives a date label without a publication time.
 
-[USYC result](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md) · [Hashnote documentation](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/SOURCES.md#usyc)
-
-## OUSG chart provenance
-
-Fund accounting can check daily OUSG moves. Ondo I LP’s Nov. 23 statement implies a 3.0764 bp return. The OUSG chart rose 3.0763 bp from Nov. 23 to 24 UTC. The chart’s per-token level and where it gets its data remain unresolved.
-
-[Paired return calculation](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#ousg-return-cross-check) · [Ondo statement and chart sources](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/SOURCES.md#ousg)
+[Month-end comparison](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#month-end)

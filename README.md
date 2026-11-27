@@ -43,6 +43,8 @@ python3 scripts/issuer_history.py --live --user-agent "${SEC_USER_AGENT:?Set you
 
 ## Documentation
 
+Public repository: [RahilBhavan/rwa-nav-feed-audit](https://github.com/RahilBhavan/rwa-nav-feed-audit).
+
 - [Results](docs/RESULTS.md) records why each product did or did not qualify.
 - [Method](docs/METHOD.md) defines the screen, clocks and extraction steps.
 - [Sources](docs/SOURCES.md) lists provenance, retrieval routes and capture hashes.

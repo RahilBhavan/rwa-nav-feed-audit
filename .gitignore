@@ -1,0 +1,12 @@
+data/
+.venv/
+__pycache__/
+*.sqlite3
+.env
+.env.*
+*.db
+*.sqlite
+*disclos*
+*Disclos*
+private/
+Private/

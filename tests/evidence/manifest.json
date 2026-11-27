@@ -1,0 +1,307 @@
+{
+  "accessed": "2026-11-26",
+  "minimum_products": 3,
+  "products": {
+    "BUIDL": {
+      "status": "no_offchain_series_found",
+      "identity": "BlackRock USD Institutional Digital Liquidity Fund Ltd., multiple classes",
+      "finding": "Securitize gives a $1/token target. Form D reports the offering. BNY documents class NAV onchain."
+    },
+    "USTB": {
+      "status": "usable",
+      "identity": "Invesco Short Duration US Government Securities Fund, USTB CUSIP 86851T204, fund ID 1",
+      "finding": "Superstate publishes dated NAV/share from its fund API. Indicative real-time price is a separate field.",
+      "series": [
+        {
+          "url": "https://api.superstate.com/v1/funds/1/nav-daily?start_date=2026-09-29&end_date=2026-10-05",
+          "start": "2026-09-29",
+          "end": "2026-10-05",
+          "unit": "USD/share",
+          "date_kind": "issuer API date label",
+          "original_sha256": "a7029446ef8bdbe54c4964a2b4419eee2edcdb00d6718f0c078561858cdb51a3",
+          "download": "ustb-2026-09-29.json",
+          "historical_capture_kind": "complete bounded JSON response",
+          "historical_capture_sha256": "a7029446ef8bdbe54c4964a2b4419eee2edcdb00d6718f0c078561858cdb51a3",
+          "observations": [
+            {
+              "observation": "2026-09-29",
+              "value": "11.22883000"
+            },
+            {
+              "observation": "2026-09-30",
+              "value": "11.22990800"
+            },
+            {
+              "observation": "2026-10-01",
+              "value": "11.23105300"
+            },
+            {
+              "observation": "2026-10-02",
+              "value": "11.23223300"
+            },
+            {
+              "observation": "2026-10-03",
+              "value": "11.23223300"
+            },
+            {
+              "observation": "2026-10-04",
+              "value": "11.23223300"
+            },
+            {
+              "observation": "2026-10-05",
+              "value": "11.23554700"
+            }
+          ]
+        },
+        {
+          "url": "https://api.superstate.com/v1/funds/1/nav-daily?start_date=2026-11-20&end_date=2026-11-26",
+          "start": "2026-11-20",
+          "end": "2026-11-26",
+          "unit": "USD/share",
+          "date_kind": "issuer API date label",
+          "provisional_carry_forward_labels": [
+            "2026-11-25",
+            "2026-11-26"
+          ],
+          "original_sha256": "c72e9d66cc8fdb1c0c7c1f2f529c67755fba66cc1939be941170a97aff178a5b",
+          "download": "ustb-2026-11-20.json",
+          "historical_capture_kind": "complete bounded JSON response",
+          "historical_capture_sha256": "c72e9d66cc8fdb1c0c7c1f2f529c67755fba66cc1939be941170a97aff178a5b",
+          "observations": [
+            {
+              "observation": "2026-11-20",
+              "value": "11.28681100"
+            },
+            {
+              "observation": "2026-11-21",
+              "value": "11.28681100"
+            },
+            {
+              "observation": "2026-11-22",
+              "value": "11.28681100"
+            },
+            {
+              "observation": "2026-11-23",
+              "value": "11.29028700"
+            },
+            {
+              "observation": "2026-11-24",
+              "value": "11.29144100"
+            },
+            {
+              "observation": "2026-11-25",
+              "value": "11.29144100"
+            },
+            {
+              "observation": "2026-11-26",
+              "value": "11.29144100"
+            }
+          ]
+        }
+      ]
+    },
+    "USYC": {
+      "status": "circular_oracle_history",
+      "identity": "Hashnote International Short Duration Yield Fund Ltd., USYC token",
+      "finding": "Circle/Hashnote explicitly describes this API as an index of onchain oracle reports.",
+      "series": [
+        {
+          "url": "https://usyc.hashnote.com/api/price-reports",
+          "start": "2026-11-23",
+          "end": "2026-11-25",
+          "unit": "USD/token",
+          "date_kind": "oracle report timestamp, UTC",
+          "original_sha256": "6c4a74d893878e1da5c6961e73748cdf8d21822362e48cc32bae74f7887f7add",
+          "download": "usyc.json",
+          "historical_capture_kind": "three complete JSON records from rolling API",
+          "historical_capture_sha256": "01d399557824c7e9c6153484e77dd5b3942106790348849b1dc25673a5541c6b",
+          "observations": [
+            {
+              "observation": "2026-11-23T13:37:11Z",
+              "value": "1.144617068725390748"
+            },
+            {
+              "observation": "2026-11-24T13:35:59Z",
+              "value": "1.144726592674273885"
+            },
+            {
+              "observation": "2026-11-25T13:33:35Z",
+              "value": "1.144875672876728641"
+            }
+          ]
+        }
+      ]
+    },
+    "OUSG": {
+      "status": "display_history_unverified_lineage",
+      "identity": "Ondo I LP, accumulating OUSG, excludes rOUSG",
+      "finding": "Ondo publishes chart prices. The checked administrator statements expose total NAV without a matching per-unit denominator.",
+      "series": [
+        {
+          "url": "https://ondo.finance/ousg",
+          "start": "2026-11-20",
+          "end": "2026-11-26",
+          "unit": "USD/token",
+          "date_kind": "UTC chart bucket",
+          "original_sha256": "0021874ff01f797790039c15681dcd434906b90abe8a0d9f7a8227027dec9c32",
+          "download": "ousg.html",
+          "historical_capture_kind": "embedded chart excerpt, original symbol/name and selected history records",
+          "historical_capture_sha256": "9bdf14724817748edeaa98ddc021756db938ec1f607e2b04611f3a7f6fc6d5c4",
+          "observations": [
+            {
+              "observation": "2026-11-20T00:00:00Z",
+              "value": "117.325319"
+            },
+            {
+              "observation": "2026-11-21T00:00:00Z",
+              "value": "117.337532"
+            },
+            {
+              "observation": "2026-11-22T00:00:00Z",
+              "value": "117.337532"
+            },
+            {
+              "observation": "2026-11-23T00:00:00Z",
+              "value": "117.337532"
+            },
+            {
+              "observation": "2026-11-24T00:00:00Z",
+              "value": "117.373629"
+            },
+            {
+              "observation": "2026-11-25T00:00:00Z",
+              "value": "117.383587"
+            },
+            {
+              "observation": "2026-11-26T00:00:00Z",
+              "value": "117.395732"
+            }
+          ]
+        }
+      ]
+    },
+    "USDY": {
+      "status": "note_reference_history",
+      "identity": "Accumulating USDY, excludes rUSDY and mUSD",
+      "finding": "Chart price and Ondo USDY LLC note principal history exist. Nominal principal accrual is a different measure from portfolio NAV/share.",
+      "series": [
+        {
+          "url": "https://ondo.finance/usdy",
+          "start": "2026-11-20",
+          "end": "2026-11-26",
+          "unit": "USD/token",
+          "date_kind": "UTC chart bucket",
+          "original_sha256": "6f2984c64bb82b0abc71f496c39ef3f7471786c705f5a60992da9cbc3ebfb317",
+          "download": "usdy.html",
+          "historical_capture_kind": "embedded chart excerpt, original symbol/name and selected history records",
+          "historical_capture_sha256": "ef7b6e24a5a36a2ff8a3ce229f44a9e94bccfa3fce861d0879f807c3604763f2",
+          "observations": [
+            {
+              "observation": "2026-11-20T00:00:00Z",
+              "value": "1.153771785829"
+            },
+            {
+              "observation": "2026-11-21T00:00:00Z",
+              "value": "1.153888166789"
+            },
+            {
+              "observation": "2026-11-22T00:00:00Z",
+              "value": "1.154004559488"
+            },
+            {
+              "observation": "2026-11-23T00:00:00Z",
+              "value": "1.15412094776"
+            },
+            {
+              "observation": "2026-11-24T00:00:00Z",
+              "value": "1.15423738011"
+            },
+            {
+              "observation": "2026-11-25T00:00:00Z",
+              "value": "1.154353808035"
+            },
+            {
+              "observation": "2026-11-26T00:00:00Z",
+              "value": "1.154470247702"
+            }
+          ]
+        }
+      ]
+    },
+    "BENJI": {
+      "status": "usable",
+      "identity": "Franklin OnChain U.S. Government Money Fund, FOBXX, C000215714, one share per BENJI",
+      "finding": "Issuer-filed market-based NAV/share, Item B.6, for each business day. Four decimal places and a monthly filing delay.",
+      "series": [
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1786958/000207169126023634/primary_doc.xml",
+          "start": "2026-09-01",
+          "end": "2026-09-30",
+          "unit": "USD/share",
+          "date_kind": "business-day close, Form N-MFP3 Item B.6",
+          "fixture": "benji-2026-09.xml",
+          "fixture_kind": "XML extract, class NAV plus series/report IDs",
+          "sha256": "9cadfabbe13dc32a552f0f232278d7533e40b13a9a68d0eb626e0e2253c3d6b8",
+          "original_sha256": "ab64fc4b57d95efbfcc476cff6b6111fc522ab96d1edbb27fb5cc00f0d5610ca"
+        },
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1786958/000207169126025490/primary_doc.xml",
+          "start": "2026-10-01",
+          "end": "2026-10-31",
+          "unit": "USD/share",
+          "date_kind": "business-day close, Form N-MFP3 Item B.6",
+          "fixture": "benji-2026-10.xml",
+          "fixture_kind": "XML extract, class NAV plus series/report IDs",
+          "sha256": "aeee15d55cfa70c96e6a17929678aac893c35b7ab1b422747a451ead327cab9c",
+          "original_sha256": "04ee3848c6b56270a4efe60b1045e02bd62663216a70e69cccf7880e906b025e"
+        }
+      ]
+    }
+  },
+  "supplemental_downloads": [
+    {
+      "download": "ousg-2026-11-23-balance.pdf",
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/7af65a83c8bd587422b52bbeaa0b0f6ab43ac26e.pdf",
+      "sha256": "7ad1007a8ddbe7a0c5a4daa9f8dbc0c3f57f0b6bcb5406ece9fa7ba8a5809405",
+      "hash_accessed": "2026-11-27"
+    },
+    {
+      "download": "ousg-2026-11-23-account.pdf",
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/bc2bd74231d48e1f89307293cc20364f622aed00.pdf",
+      "sha256": "d9504b5b008c9455a7f4afd18dd964b5fc8fac30aa11b0565772a2b0a63cba69",
+      "hash_accessed": "2026-11-27"
+    },
+    {
+      "download": "ousg-2026-11-24-balance.pdf",
+      "url": "https://cdn.sanity.io/files/8k2tqa6n/production/974f81e80c2ebae91cd8a8e32251b26f10bf8205.pdf",
+      "sha256": "a9732cd5f53f020d143540e7c1cb0f5bc9b75faf4be9aebf73e4bacbe99a7638",
+      "hash_accessed": "2026-11-27"
+    }
+  ],
+  "usdy_archive": {
+    "url": "https://ondo.finance/usdy",
+    "hash_accessed": "2026-11-27",
+    "members": [
+      {
+        "member": "2025/05 May/Ondo USDY LLC_ATCAttest_250502.pdf",
+        "download": "usdy-2025-05-02.pdf",
+        "sha256": "1a43225da85de51396378f578bf7f4a9b1ee6d51dd8faa798fe00e7ca34c3cfb"
+      },
+      {
+        "member": "2025/05 May/Ondo USDY LLC_ATCAttest_250505.pdf",
+        "download": "usdy-2025-05-05.pdf",
+        "sha256": "a3a4e9d9a467d65d47ea5678d13f354e2e4aade1f3b9af3320bf1f165ee5ee42"
+      },
+      {
+        "member": "2025/05 May/Ondo USDY LLC_ATCAttest_250506.pdf",
+        "download": "usdy-2025-05-06.pdf",
+        "sha256": "5e33309517b4f36de773c9c7223128f03f8617e927b181fd55b66d751fbcee1a"
+      },
+      {
+        "member": "2025/05 May/Ondo USDY LLC_ATCAttest_250509.pdf",
+        "download": "usdy-2025-05-09.pdf",
+        "sha256": "38c527c94493322fb9f510ce03383b03192a3b2ec9bf91e72cc814e5b58becdf"
+      }
+    ]
+  }
+}

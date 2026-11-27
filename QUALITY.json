@@ -1,0 +1,94 @@
+{
+  "rubric_version": 1,
+  "round": 1,
+  "reviewed_at": "2026-11-27T03:38:00Z",
+  "scores": {
+    "answer": 5,
+    "evidence": 7,
+    "reproducibility": 6,
+    "usefulness": 4,
+    "completeness": 3,
+    "documentation": 7,
+    "post_kit": 5,
+    "code": 7
+  },
+  "overall": 3,
+  "gaps": [
+    {
+      "dimension": "completeness",
+      "issue": "The reopened study still lacks its empirical feed comparison: no feed update history, lag, deviation or heartbeat figures, no weekend or month-end comparison, and no chart. The reviewer's keyless check shows the strongest reshape is feasible. All 430 rounds of the Chainlink 'USTB NAV per Share' feed (Ethereum proxy 0x289B5036cd942e619E1Ee48670F98d214E745AAC, block 26503879) match a Superstate nav-daily value exactly. Every one of the 288 distinct issuer NAVs since 2025-09-29 appears onchain.",
+      "fix": "Add scripts/feed_history.py. It walks proxy rounds with getRoundData through PublicNode eth_call at a pinned block, recording phase, aggregator, decimals and description, plus a SHA-256 of the pinned round fixture. Join each round to the first Superstate nav-daily date carrying the same value. Report per round: NAV date to updatedAt (calendar hours and business days), heartbeat gaps against the 95,400 s heartbeat, weekend and holiday staleness in bp against the issuer's date label, and month-end cases. Make one chart. Record source digests and publish only material whose redistribution is permitted.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "usefulness",
+      "issue": "The availability table (2/6 strict, 3/6 broad) is a feasibility note. An RWA risk team would cite measured delivery timing and staleness. NavBridge uses simulated oracle data and vendor pages state heartbeat parameters, so a measured USTB issuer-to-feed timing series would go beyond both. Right now nothing does.",
+      "fix": "Lead with the USTB feed timing result. Keep the six-product availability table as context. State the provenance caveat next to the timing claim: the Chainlink directory lists porSource 'Asset Manager API' and porAuditor 'Superstate', so value agreement is expected and the measured quantities are delivery delay and staleness, not independent valuation.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "completeness",
+      "issue": "OUSG's chart lineage is marked unresolved after one day. The reviewer recomputed that day: the accounting return is 3.076353 bp and the chart change is 3.076339 bp, a difference of 1.4e-5 bp. One day can't establish lineage, but the public monthly statement table makes a multi-day test cheap.",
+      "fix": "Pull 15 to 20 daily Ondo I LP account statements from app.ondo.finance/legal-documentation/us?month=2026-11 (pin each PDF's SHA-256) and compare each implied return with the matching chart-bucket change. Report the agreement distribution. If agreement holds, reclassify the OUSG chart as administrator-return-derived (a return series, still without an independent per-unit level).",
+      "owner": "agent"
+    },
+    {
+      "dimension": "completeness",
+      "issue": "The USDY oracle-to-note-principal comparison is unexamined, though both values are USD/token. Ondo's docs say the ContinuousPriceOracle replaced the previous oracle on 2026-11-01 and that getPriceHistorical exists only on the old one. The reviewer did not resolve the oracle address: the docs addresses URLs tried returned 404.",
+      "fix": "Optional second fund. Resolve the old and new USDY oracle addresses from Ondo docs or an Etherscan contract page and cite them. Read old-oracle ranges at pinned blocks for the May 2025 report dates. Compare them with the pinned Section C Reference Token principal (1.088693, 1.089066, 1.089190, 1.089563). Label this an issuer-oracle-vs-issuer-report fidelity check. Retrieve the named reports through the public issuer page.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "reproducibility",
+      "issue": "Historical live comparison received HTTP 403 from EDGAR when the request had no declared contact.",
+      "fix": "The current live CLI requires explicit request identification. The historical review also proposed collecting SEC_USER_AGENT from the local environment, skipping EDGAR when identification is unavailable, explaining fair-access errors, and recording full response digests.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "reproducibility",
+      "issue": "A compliant live comparison requires a genuine declared EDGAR contact.",
+      "fix": "Supply genuine request identification and contact locally for live EDGAR runs. The offline replay retains the filing excerpts. The original full XML hashes were independently checked.",
+      "owner": "maintainer"
+    },
+    {
+      "dimension": "reproducibility",
+      "issue": "Live mode records original_sha256 but never checks it. The headline counts cannot be reproduced from any command: USTB 1,059 labels, OUSG 1,396, USDY 1,165, USYC 45. The OUSG and USDY PDF figures depend on manual pdftotext with no pinned PDF hashes.",
+      "fix": "In live mode, compare each full response hash with original_sha256 and report 'bytes_match' separately from the row comparison. Have the script print full-history counts with first and last labels. Add SHA-256 values for the November 23 OUSG account statement and the four USDY LLC PDFs to the manifest, plus a documented one-line extraction command per PDF.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "answer",
+      "issue": "The README restates the brief as an availability question. Its headline is a two-count answer (2/6 strict, 3/6 broad) that a stranger has to decode. It is no longer the strongest answer the public evidence supports.",
+      "fix": "After reproducing the results from pinned sources, lead with the measured USTB timing and explain which other products lack comparable inputs.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "post_kit",
+      "issue": "All five drafts passed automated editorial checks, but they report availability in desk jargon. Draft 1 packs two counts into one post. Drafts 1 and 4 lack the observation date in post 1. Draft 2 ends with the question the feed data now answers. There is no chart, so the brief's single chart and its automated checks are missing.",
+      "fix": "Rewrite three or four drafts around measured USTB timing: next-business-day posting, the Friday NAV arriving Monday, holiday staleness (2025-11-11 Veterans Day: the feed held Friday's NAV and ran 3.1 bp behind the issuer label), and a month-end example. Give each one number, one claim and an anchored RESULTS link. Build one chart and check its layout and numbers, and keep any card to 20 words or fewer.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "documentation",
+      "issue": "STATE.md says 'Next action: none' and HANDOFF.md says DONE with no action required. Both were stale when the scope reopened. METHOD says no chain reads are pinned. README's EDGAR wording understates the failure.",
+      "fix": "Rewrite STATE.md with the reshape as the next action. Add a dated DECISIONS entry for the reopening and the reshaped question. Extend METHOD with feed addresses (Chainlink directory and docs citations), the pinned block, the join rule and the clock definitions. Mark HANDOFF as superseded until the reshape closes.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "code",
+      "issue": "test_all_six_products_and_gate asserts the manifest's own hand-entered status labels, which is circular. The live-mode except clause also catches TypeError and AttributeError, so a programming bug would be reported as a source error. The 2 MB limit and the EDGAR skip path are untested.",
+      "fix": "Keep the classification test, but derive at least the usable/excluded split from extracted-data properties where possible, such as unit and the presence of a matching per-unit series. Drop TypeError and AttributeError from the live catch, or re-raise them. Add tests for the size limit, the SEC_USER_AGENT skip and remedy message, and the new feed join, including the holiday case.",
+      "owner": "agent"
+    }
+  ],
+  "history": [
+    {
+      "round": 1,
+      "overall": 3
+    }
+  ],
+  "follow_up_decisions": [
+    "Choose which optional source comparisons to pursue after reproducing the USTB result.",
+    "Determine licensing and any external release separately."
+  ]
+}

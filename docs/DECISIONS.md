@@ -37,3 +37,7 @@ Rahil selected the MIT License for the project code. Third-party filings and dat
 The reviewer’s 430-round lead was a trailing window within phase 2. The pinned proxy maps two aggregators, which continued to store rounds while inactive. Adjacent block state established the switch at block 20,464,407, allowing the study to measure the active proxy across 889 observations. Keep the 920 stored-round count for fidelity and retain the trailing result for comparison. Use the same-date label at UTC close for the daily series, and the previous date label at round time for the separate update-level measure.
 
 The November Ondo document table supported 14 OUSG return pairs, including an outlier on November 24. Keep the per-unit level and exact chart provenance unresolved. BENJI uses separate filing and valuation clocks. USDY compares issuer note principal with the legacy oracle at each report-day block and cross-checks the later historical ranges. Independent Round 2 review follows implementation.
+
+## 2026-11-27 — Distinguish the posting date from sessions elapsed
+
+Round 2 scored 5/10 after independently reproducing the capture. Two Saturday observations exposed a difference between counting elapsed NYSE sessions and landing on the next session date. Use explicit posting-date equality and examine the issuer's observed NAV changes. Label that clock by what the API shows. Freeze the official reference date so subsequent updates to provisional labels cannot change the reported study.

@@ -1,0 +1,39 @@
+{
+  "receipts": {
+    "consumer-page-1.json": {
+      "fetched_at_utc": "2026-11-27T04:52:47.594521+00:00",
+      "sha256": "789c74ac35f3754784677b921b3c6bbf3549b0da2dca16840795cb4f19a09c33",
+      "url": "https://eth.blockscout.com/api/v2/addresses/0x15fe07bc9019a0dec7de49c29e816261a047d252/logs?block_number=26503880&index=0"
+    },
+    "consumer-page-2.json": {
+      "fetched_at_utc": "2026-11-27T04:52:48.290307+00:00",
+      "sha256": "ef1734bb4132d1367f9df59b29ae54ee6d1cedc85c9ee87a3b76119b24d54978",
+      "url": "https://eth.blockscout.com/api/v2/addresses/0x15fe07bc9019a0dec7de49c29e816261a047d252/logs?index=284&block_number=26417731"
+    },
+    "events.json": {
+      "fetched_at_utc": "2026-11-27T04:52:51.500929+00:00",
+      "sha256": "51f4d78d1ca87d64a573c5b9d299947908136bce0319a114327114472cba552c",
+      "url": "https://eth.drpc.org"
+    },
+    "router-logs.json": {
+      "fetched_at_utc": "2026-11-27T04:52:49.025620+00:00",
+      "sha256": "d37fb009415f6dad0f5bb2a7023cbb8f706763648eaf7619cc589ff5c3a4a677",
+      "url": "https://eth.blockscout.com/api/v2/addresses/0xdf8decbdb89c95297ee6ef816bd8a7b66973f254/logs"
+    }
+  },
+  "sample": {
+    "adapter": "0x5d2edcad212e2f480cd8e97d839b7d539249b6e5",
+    "block": 26503879,
+    "block_hash": "0x4763fd004596f13e42369a95222159fa52ccd36db8925d324d86631625e6249f",
+    "consumer": "0x15fe07bc9019a0dec7de49c29e816261a047d252",
+    "decimals": 18,
+    "router": "0xdf8decbdb89c95297ee6ef816bd8a7b66973f254",
+    "router_activation": {
+      "block": 22926115,
+      "block_hash": "0x01a7e858490d74ac207992c3753483523076d3f961511a824ae797f3af59b0de",
+      "tx": "0x21c3cafcd738616ac614fd5ba00d744f8008bb4f48176e0361df63ec7f9713fa"
+    },
+    "start": 26417731,
+    "timestamp": 1795750391
+  }
+}

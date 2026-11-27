@@ -8,7 +8,27 @@
   },
   "chain_sha256": "da192d935aea4796291d0e5da40688a9918f0fce73dcd4a8f748e920a2154bb7",
   "heartbeat": 95400,
-  "labels_sha256": "64f2daca02e04db3fc787240d454c91089a8cee810e630c6b9732bd43eda3c96",
+  "issuer_cutoff": {
+    "financials_sha256": "489fde48662aecf6f7c6851a05654a99e7a57a9a15da4b2deb2e33427054432b",
+    "observed_at_utc": "2026-11-27T04:00:54.503435+00:00",
+    "official": {
+      "nav_date": "2026-11-24",
+      "nav_per_share": "11.291441"
+    }
+  },
+  "issuer_window_probes": {
+    "nav-2026-11-24.json": {
+      "fetched_at_utc": "2026-11-27T04:48:50.882193+00:00",
+      "sha256": "c2623401687ff41e803f8bbc0910831cd81826742a74cddec6a18f54484efee1",
+      "url": "https://api.superstate.com/v1/funds/1/nav-daily?start_date=2026-11-20&end_date=2026-11-24"
+    },
+    "nav-2026-11-28.json": {
+      "fetched_at_utc": "2026-11-27T04:48:50.989661+00:00",
+      "sha256": "f48650f2612f6204645f1b4fc3f5800e30e7fa6581ddfb788e7f630a26adc057",
+      "url": "https://api.superstate.com/v1/funds/1/nav-daily?start_date=2026-11-20&end_date=2026-11-28"
+    }
+  },
+  "labels_sha256": "f71f32965ad2e33cd174bf876fa1483fab1d1b1e770cb26b6d111796161c53d9",
   "phases": [
     {
       "active_rounds": 40,

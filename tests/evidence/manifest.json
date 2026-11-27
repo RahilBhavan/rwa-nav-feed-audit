@@ -55,19 +55,15 @@
           "valuation_basis": "issuer-published fund NAV"
         },
         {
-          "url": "https://api.superstate.com/v1/funds/1/nav-daily?start_date=2026-11-20&end_date=2026-11-26",
+          "url": "https://api.superstate.com/v1/funds/1/nav-daily?start_date=2026-11-20&end_date=2026-11-24",
           "start": "2026-11-20",
-          "end": "2026-11-26",
+          "end": "2026-11-24",
           "unit": "USD/share",
           "date_kind": "issuer API date label",
-          "provisional_carry_forward_labels": [
-            "2026-11-25",
-            "2026-11-26"
-          ],
-          "original_sha256": "c72e9d66cc8fdb1c0c7c1f2f529c67755fba66cc1939be941170a97aff178a5b",
+          "original_sha256": "c2623401687ff41e803f8bbc0910831cd81826742a74cddec6a18f54484efee1",
           "download": "ustb-2026-11-20.json",
           "historical_capture_kind": "complete bounded JSON response",
-          "historical_capture_sha256": "c72e9d66cc8fdb1c0c7c1f2f529c67755fba66cc1939be941170a97aff178a5b",
+          "historical_capture_sha256": "c2623401687ff41e803f8bbc0910831cd81826742a74cddec6a18f54484efee1",
           "observations": [
             {
               "observation": "2026-11-20",
@@ -88,17 +84,10 @@
             {
               "observation": "2026-11-24",
               "value": "11.29144100"
-            },
-            {
-              "observation": "2026-11-25",
-              "value": "11.29144100"
-            },
-            {
-              "observation": "2026-11-26",
-              "value": "11.29144100"
             }
           ],
-          "valuation_basis": "issuer-published fund NAV"
+          "valuation_basis": "issuer-published fund NAV",
+          "hash_accessed": "2026-11-27"
         }
       ]
     },

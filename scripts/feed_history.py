@@ -299,7 +299,7 @@ def issuer_labels(raw, last, decimals):
     return labels
 
 
-def replay(destination, reference=None):
+def replay(destination, reference):
     receipts = json.loads((destination / "receipts.json").read_bytes())
     check(set(receipts) == {*SOURCES, "chain.json", "activation.json"}, "incomplete feed capture receipts")
     raw = {}
@@ -332,15 +332,24 @@ def replay(destination, reference=None):
     provenance = {field: directory["docs"][field] for field in ("porSource", "porAuditor", "marketHours")}
     heartbeat = directory["heartbeat"]
     check(isinstance(heartbeat, int) and heartbeat > 0, "invalid directory heartbeat")
-    last = utc(chain["block_timestamp"]).date() - DAY
-    labels = issuer_labels(raw["issuer.json"], last, chain["decimals"])
+    # Live financials can move forward while a historical replay stays pinned.
+    # Retain finalized labels beyond the last complete UTC day for lookahead only.
+    cutoff = reference["issuer_cutoff"]
+    origin = reference["receipts"]["financials.json"]
+    check(cutoff["financials_sha256"] == origin["sha256"]
+          and cutoff["observed_at_utc"] == origin["fetched_at_utc"], "pinned official NAV receipt mismatch")
+    official = cutoff["official"]
+    official_date = date.fromisoformat(official["nav_date"])
+    last = min(utc(chain["block_timestamp"]).date() - DAY, official_date)
+    labels = issuer_labels(raw["issuer.json"], official_date, chain["decimals"])
+    check(Decimal(official["nav_per_share"]).scaleb(chain["decimals"]) == labels[official_date],
+          "pinned official NAV differs from the issuer label at the cutoff")
     label_digest = sha(json_bytes({str(day): answer for day, answer in labels.items()}))
-    if reference:
-        check(sha(raw["chain.json"]) == reference["chain_sha256"], "pinned round fixture checksum mismatch")
-        check(sha(raw["activation.json"]) == reference["activation_sha256"], "pinned phase switch checksum mismatch")
-        check(label_digest == reference["labels_sha256"], "historical issuer label/value checksum mismatch")
-        check(heartbeat == reference["heartbeat"] and provenance == reference["provenance"],
-              "feed directory heartbeat or provenance differs from reference capture")
+    check(sha(raw["chain.json"]) == reference["chain_sha256"], "pinned round fixture checksum mismatch")
+    check(sha(raw["activation.json"]) == reference["activation_sha256"], "pinned phase switch checksum mismatch")
+    check(label_digest == reference["labels_sha256"], "historical issuer label/value checksum mismatch")
+    check(heartbeat == reference["heartbeat"] and provenance == reference["provenance"],
+          "feed directory heartbeat or provenance differs from reference capture")
     first = utc(rounds[0]["updated_at"]).date()
     check(min(labels) <= first, "issuer history starts after proxy rounds")
     phases = [
@@ -351,7 +360,7 @@ def replay(destination, reference=None):
              active_rounds=sum(r["id"] >> 64 == p["phase"] for r in rounds))
         for p in chain["phases"]
     ]
-    label_values = set(labels.values())
+    label_values = {value for day, value in labels.items() if day <= last}
     active_ids = {row["id"] for row in rounds}
     return dict(
         block={k: chain[k] for k in ("block", "block_hash", "block_timestamp", "proxy")},
@@ -366,11 +375,12 @@ def replay(destination, reference=None):
         directory_current_aggregator=directory["contractAddress"],
         directory_benji_name_candidates=franklin_entries,
         receipts=receipts, chain_sha256=sha(raw["chain.json"]), labels_sha256=label_digest,
-        issuer_labels=dict(total_to_cutoff=len(labels), first=min(labels), last=last,
-                           official_snapshot=financials["official"]),
-        full=analyze(rounds, labels, first, last, heartbeat),
-        review_window=analyze(rounds, labels, WINDOW, last, heartbeat),
-        review_label_cohort=analyze(rounds, labels, date(2025, 9, 29), last, heartbeat)["summary"],
+        issuer_labels=dict(total_to_cutoff=sum(day <= last for day in labels), first=min(labels), last=last,
+                           finalized_through=official_date, cutoff=cutoff),
+        full=analyze(rounds, labels, first, last, heartbeat, observed_through=chain["block_timestamp"]),
+        review_window=analyze(rounds, labels, WINDOW, last, heartbeat, observed_through=chain["block_timestamp"]),
+        review_label_cohort=analyze(rounds, labels, date(2025, 9, 29), last, heartbeat,
+                                    observed_through=chain["block_timestamp"])["summary"],
     )
 
 

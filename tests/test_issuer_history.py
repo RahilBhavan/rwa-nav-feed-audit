@@ -79,15 +79,15 @@ class IssuerHistoryTest(unittest.TestCase):
 
     def test_ustb_keeps_month_end_weekends_and_precision(self):
         fall, november = self.products["USTB"]["series"]
-        self.assertEqual([len(fall["rows"]), len(november["rows"])], [7, 7])
+        self.assertEqual([len(fall["rows"]), len(november["rows"])], [7, 5])
         values = {row["observation"]: row["value"] for row in fall["rows"]}
         self.assertEqual(values["2026-09-30"], "11.22990800")
         self.assertEqual(values["2026-10-02"], "11.23223300")
         self.assertEqual(values["2026-10-02"], values["2026-10-03"])
         self.assertEqual(values["2026-10-02"], values["2026-10-04"])
         self.assertNotEqual(values["2026-10-02"], values["2026-10-05"])
-        self.assertEqual(november["provisional_carry_forward_labels"], ["2026-11-25", "2026-11-26"])
-        self.assertEqual({row["value"] for row in november["rows"][-3:]}, {"11.29144100"})
+        self.assertEqual(november["rows"][-1]["observation"], "2026-11-24")
+        self.assertEqual(november["rows"][-1]["value"], "11.29144100")
         with self.assertRaisesRegex(ValueError, "expected Superstate fund ID 1"):
             audit.ustb_rows(b'[{"fund_id":2}]')
 
@@ -294,7 +294,7 @@ class LiveComparisonTest(unittest.TestCase):
             {"observation": "2026-09-30", "pinned": "11.22990800", "live": "11.23000000"},
         ])
         self.assertEqual(second["comparison"]["live_count"], 0)
-        self.assertEqual(len(second["comparison"]["missing"]), 7)
+        self.assertEqual(len(second["comparison"]["missing"]), 5)
         self.assertEqual(report["products"]["OUSG"]["series"][0]["comparison"]["added"],
                          ["2026-11-20T12:00:00Z"])
 

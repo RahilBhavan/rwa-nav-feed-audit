@@ -1,14 +1,13 @@
-# Round 1 implementation handoff
+# Round 2 implementation handoff
 
-The pinned USTB comparison supersedes the first availability-only handoff. Start with [Results](docs/RESULTS.md), then read [Method](docs/METHOD.md) and [source receipts](docs/SOURCES.md#download-and-capture-hashes).
+[Results](docs/RESULTS.md) · [Method and reproduction commands](docs/METHOD.md#replay-and-verification) · [Source receipts](docs/SOURCES.md#download-and-capture-hashes) · [Round 2 review](docs/QUALITY.md)
 
-- Re-run the chart byte check and pinned history using the commands in [README](README.md). Recheck the switch blocks when verifying the difference between stored and active rounds.
-- Recalculate largest daily and holiday gaps with the issuer label as denominator. Keep the 430-round window, the 288-value issuer cohort and the complete historical cohort distinct.
-- Use the public SEC filing indices to confirm the acceptance timestamps. Live XML and index verification with genuine organizational identification is a maintainer follow-up. The generic probe returned HTTP 403.
-- Review the exact [SVG](docs/ustb-gap.svg) and [text drafts](posts/DRAFTS.md) and their [preflight receipt](posts/post-review.json) independently before using the media or drafts externally. The render was inspected at 680 px and 342 px, the visible text stays within 20 words, and ink-to-paper contrast is 13.20:1. The figure has SHA-256 `b06cb56011bbf1c77e2ae39a69250790fef9677e0b55447744c0a6cdf2f23f86`.
+- Reproduced **582 of 593** literal next-NYSE-session dates and **584** posts after exactly one session elapsed. Against the next issuer value-change date, the frozen labels support **588 of 593** matches on that date, four one day after and one unknown. November 24’s matched value posted on November 25. The pinned issuer series stops at November 24, so it cannot classify that post against a later issuer change. Eight values were unseen through the block.
+- The original financials snapshot is pinned as of **2026-11-27 04:00:54 UTC**. A fresh public capture at **04:46:21–04:46:32 UTC** reproduced the normalized issuer hash and both chain hashes despite different live financials bytes. The fresh snapshot still reported November 24. A regression test advances the live official date and revises the provisional tail, preserving replay output and the unknown classification.
+- The Chronicle sample captured **2026-11-27 04:52:47–04:52:51 UTC** included 25 verified events. Both feeds matched seven issuer values. All six values with finalized successors posted on the next issuer change date on both feeds. Chronicle was earlier on six pairs and later on one. The comparison is bounded to the sample and uses onchain visibility time.
+- A separate raw-input calculation checked the timing counts, unmatched labels, daily minimum, month-end counts, interval maximum, heartbeat count and all seven paired time differences. All 25 tests passed on Python 3.14.8 and 3.10.21. OUSG replay verified all 14 PDF comparisons. USDY replay checked all four reports against the pinned oracle. Both live USTB windows matched. Live EDGAR was skipped because no authorized organization identity was configured.
+- The [SVG](docs/ustb-gap.svg) has SHA-256 `4e7a2a20f5d904d9b0976a76db3724f6444424613a60892f448d454235b97452`. The byte check passed. Inspection at 342 and 680 px used Archivo and IBM Plex Sans. The chart contains 18 visible words and has 13.20:1 ink-to-paper contrast. All four [draft bodies](posts/DRAFTS.md) passed preflight, with their anchors and exact bytes recorded in the [post receipt](posts/post-review.json). Independent source, editorial and design review remain pending.
 
-The maintainer owns commits, push and any release. The original Round 1 rubric remains in its historical files.
-
-Verification passed on Python 3.10 and 3.14 with 21 tests on each. A separate clean dRPC capture reproduced both pinned chain digests, the issuer-label digest, all reported USTB metrics and the exact chart. OUSG replay verified all 14 PDF digests and USDY replay verified all four reports and pinned oracle comparisons. All four draft bodies passed preflight.
+After 2026-11-30, rerun the clean-clone capture, replay and chart byte check when the issuer has finalized its next NAVs. This is the time-owned external check. The current study leaves issuer publication time unknown.
 
 [Public repository](https://github.com/RahilBhavan/rwa-nav-feed-audit)

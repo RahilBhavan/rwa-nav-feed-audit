@@ -1,6 +1,6 @@
 # NAV feed audit results
 
-Chainlink’s Ethereum USTB feed first posted **588 of 593 matched changes on the next issuer value-change date**. Four posted one calendar day after that date. The last posted value has no following change in the finalized issuer series, so its timing against this proxy is unknown. Eight of 601 issuer values were unseen on the active proxy through the pinned block. The issuer value-change date is a proxy for the valuation schedule. The data give neither the actual strike nor the publication time. [Inputs and clocks](METHOD.md#join-clocks-and-denominators) · [Source register](SOURCES.md#ustb)
+**How quickly did Chainlink post Superstate’s USTB NAV?** It delivered **588 of 601 values on the next date Superstate’s labelled NAV changed**, usually around **9:10 a.m. New York time**. Four appeared a day after that date, eight were unseen at the pin, and one appeared onchain without a finalized successor date in the issuer history. The next NAV change is a date-based proxy for the valuation schedule. The actual strike and publication times are unknown. [Inputs and clocks](METHOD.md#join-clocks-and-denominators) · [Source register](SOURCES.md#ustb)
 
 ![Timeline of Chainlink’s Ethereum delivery for 601 Superstate USTB value changes. 588 posted on the next issuer value-change date, four posted a day after, eight were unseen at the pin, and one has unknown timing.](ustb-gap.svg)
 
@@ -23,7 +23,14 @@ The Ethereum pin is block **26,503,879**, November 27, 2026 at 03:33:11 UTC. Cha
 
 The digest covers 1,057 consecutive API date labels from January 3, 2024 through November 24, 2026. Later dates returned $11.291441 as a forward fill, including November 28 in a November 27 request. The narrower issuer cohort from September 29, 2025 contains 288 distinct values on 422 labels, all observed by the pin. The review round window starts on September 27 and includes the September 25 carry and the change from the September 26 label first posted September 29. That last change is included in review round timing and outside the review label-start cohort.
 
-At the pin, contiguous lookup yielded 46 phase 1 and 874 phase 2 rounds. The crossover left 40 phase 1 and 849 phase 2 rounds active. All 920 stored rounds match an issuer value, including 31 inactive rounds excluded from the delivery figures. The eight unseen values were first labelled July 26, August 7, August 16, August 28, September 30, October 15 and December 4 in 2024, and August 13 in 2025. Each had a following issuer change and chain follow-up beyond that date. The cause of each omission and any delivery after the pin are unknown. [Proxy reconstruction](METHOD.md#study-pair-and-cutoff)
+At the pin, contiguous lookup yielded 46 phase 1 and 874 phase 2 rounds. The crossover left 40 phase 1 and 849 phase 2 rounds active. All 920 stored rounds match an issuer value, including 31 inactive rounds excluded from the delivery figures. The eight unseen values were first labelled July 26, August 7, August 16, August 28, September 30, October 15 and December 4 in 2024, and August 13 in 2025. Each had a following issuer change and chain follow-up beyond that date. **None of the eight appears in any of the 920 stored rounds**, including the 31 on inactive aggregators. The cause of the omissions and any delivery after the pin are unknown. [Proxy reconstruction](METHOD.md#study-pair-and-cutoff)
+
+| Issuer label period | Next change date | One day after | Unseen at pin | No finalized successor | Total |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Jun 27–Dec 31, 2024 | 118 | 3 | 7 | 0 | 128 |
+| Jan 1, 2025–Nov 24, 2026 | 470 | 1 | 1 | 1 | 473 |
+
+Seven of the eight unseen values and three of the four day-after posts came from 2024 labels. The replay computes these cohorts from the spell-start dates.
 
 ## Update timing and intervals
 
@@ -74,26 +81,35 @@ Of 29 completed NYSE month-ends in scope, 28 had an observed value from a spell 
 
 ## Chronicle comparison
 
-Chronicle’s Ethereum USTB consumer and Chainlink’s Ethereum proxy both matched **all seven** finalized Superstate values first labelled November 16–24, 2026. Both posted on the next issuer value-change date in **six of six classifiable cases**. November 24’s value appeared on both on November 25, with no finalized successor to classify the posting date. No sampled value was unseen through the common pin on either feed.
+Across **340 shared issuer NAV values** labelled July 16, 2025 through November 24, 2026, Chainlink posted **337** on the next issuer NAV change date and the Chronicle router’s consumer posted **236**. The two feeds were observed through the same Ethereum block. This comparison starts the day after router activation. It measures consumer writes across the full router window. Chronicle’s Chainlink-compatible adapter was deployed later, on April 10, 2026. [Method](METHOD.md#chronicle-comparison) · [Contract records](SOURCES.md#chronicle-ustb)
 
-| Issuer label | Next issuer change | Chainlink first post (EST) | Chronicle first post (EST) | Chronicle minus Chainlink |
-| --- | --- | --- | --- | ---: |
-| Nov 16 | Nov 17 | 09:14:35 | 09:34:11 | +19m 36s |
-| Nov 17 | Nov 18 | 09:16:59 | 09:06:47 | −10m 12s |
-| Nov 18 | Nov 19 | 09:13:23 | 08:41:11 | −32m 12s |
-| Nov 19 | Nov 20 | 09:17:35 | 08:20:23 | −57m 12s |
-| Nov 20 | Nov 23 | 09:14:59 | 06:59:47 | −2h 15m 12s |
-| Nov 23 | Nov 24 | 09:12:47 | 06:34:23 | −2h 38m 24s |
-| Nov 24 | Unknown | Nov 25 09:13:47 | Nov 25 06:08:47 | −3h 05m |
+| Delivery against the next issuer NAV change date | Chainlink | Chronicle consumer |
+| --- | ---: | ---: |
+| On the date | 337 | 236 |
+| Before the date | 0 | 3 |
+| After the date | 1 | 7 |
+| Exact value unseen at the pin | 1 | 93 |
+| Unknown date classification | 1 | 1 |
+| Total shared labels | 340 | 340 |
+| Median New York posting time across the same 246 pairs with finalized successors | 09:10:47 | 11:32:29 |
 
-Chronicle was earlier in six pairs and later in one. The table compares onchain posting times for exact matches, with both feeds observed through the same block. This sample provides no general ranking or publication-to-chain latency estimate. [Cross-check method](METHOD.md#chronicle-comparison) · [Chronicle receipts](../tests/evidence/chronicle-capture.json)
+Chronicle posted earlier for 81 of the 246 pairs and later for 165, with a median paired difference of **2 hours 23 minutes later**. November 24’s value reached both feeds on November 25. Its successor is outside the pinned issuer series, so it is excluded from the paired timing summary and stays unknown in the date counts. No shared label was left-censored at activation. An unseen value means the exact issuer amount did not appear by the pin. Other writes can still occur in that period.
+
+| Shared label period | Labels | Chainlink on date / unseen | Chronicle on date / unseen |
+| --- | ---: | ---: | ---: |
+| Jul 16–Dec 31, 2025 | 116 | 115 / 1 | 31 / 82 |
+| Jan 1–Nov 24, 2026 | 224 | 222 / 0 | 205 / 11 |
+
+The difference was concentrated in 2025. None of the 76 NAV values first labelled July 16 through October 31, 2025 appeared exactly in Chronicle’s consumer by the pin. The consumer did record values during that period. Its first write, on July 18 at 13:31:11 UTC, carried $6.16. The first exact match in the log history was $10.888154 on November 11, 2025 at 09:13:23 UTC. Over the full deployment-to-pin history, **655 of 877** events matched a finalized issuer value exactly, including repeated writes. The source trail does not identify the schedule, operating intent or value basis for the unmatched early writes.
+
+The complete consumer stream is pinned to **22,926,094–26,503,879**. Blockscout v2’s 38 pages and a separate keyless Ethereum `eth_getLogs` sweep across 358 contiguous ranges agreed on all 877 events. Each was checked against its transaction receipt and block header. [Capture evidence](../tests/evidence/chronicle-capture.json) · [Replay commands](METHOD.md#replay-and-verification)
 
 ## Other products
 
 | Product | Comparable evidence and limit |
 | --- | --- |
 | BUIDL | BNY documents class-specific NAV onchain, and launch materials state a $1 target. The reviewed offchain materials did not contain dated valuations for a matching share class. [Sources](SOURCES.md#buidl) |
-| USTB | Public dated NAV/share and a matched Ethereum primary feed. The Chronicle sample covers a shorter shared window. Other wrappers, providers and networks are outside the measured scope. [Full history](#full-history-and-coverage) · [Chronicle comparison](#chronicle-comparison) |
+| USTB | Public dated NAV/share and a matched Ethereum primary feed. The Chronicle comparison covers all shared labels after router activation. Other wrappers, providers and networks are outside the measured scope. [Full history](#full-history-and-coverage) · [Chronicle comparison](#chronicle-comparison) |
 | USYC | The API indexes its own onchain price reports. A comparison against its parent feed would reuse the same reports. [Sources](SOURCES.md#usyc) |
 | OUSG | Administrator statements support a return check. The checked fund-wide accounts do not expose a corresponding per-token denominator. [Return cross-check](#ousg-return-cross-check) |
 | USDY | Ondo USDY LLC reports publish accrued USD/token note principal. The old USDY oracle can be evaluated retrospectively at matched timestamps, subject to the range and clock limits below. [Note principal](#usdy-note-principal) |

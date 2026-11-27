@@ -6,10 +6,11 @@ import re
 import time
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
+from email.utils import parsedate_to_datetime
 from http.client import HTTPException
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from fetch_sources import save
@@ -55,6 +56,20 @@ def utc(seconds):
     return datetime.fromtimestamp(seconds, timezone.utc)
 
 
+def retry_delay(error, backoff):
+    retry = error.headers.get("Retry-After", "") if error.headers else ""
+    retry_after = 0
+    if retry.isdigit():
+        retry_after = int(retry)
+    elif retry:
+        try:
+            retry_after = parsedate_to_datetime(retry).timestamp() - time.time()
+        except (TypeError, ValueError):
+            pass
+    check(retry_after <= 120, "Retry-After exceeds capture retry budget")
+    return max(retry_after, backoff)
+
+
 def rpc_batch(url, calls):
     request = [
         dict(jsonrpc="2.0", id=i, method=method, params=params)
@@ -74,8 +89,10 @@ def rpc_batch(url, calls):
         except HTTPError as exc:
             if exc.code not in {429, 500, 502, 503, 504} or attempt == 2:
                 raise
-            time.sleep(2 ** attempt)
-        except (TimeoutError, ConnectionError):
+            with exc:
+                backoff = retry_delay(exc, 2 ** attempt)
+            time.sleep(backoff)
+        except (TimeoutError, ConnectionError, HTTPException, URLError):
             if attempt == 2:
                 raise
             time.sleep(2 ** attempt)
@@ -362,6 +379,13 @@ def replay(destination, reference):
     ]
     label_values = {value for day, value in labels.items() if day <= last}
     active_ids = {row["id"] for row in rounds}
+    full = analyze(rounds, labels, first, last, heartbeat, observed_through=chain["block_timestamp"])
+    stored_values = {row["answer"] for row in stored_rounds}
+    unseen = [r for r in full["delivery"] if r["status"] == "unseen"]
+    for row in unseen:
+        row["absent_from_all_stored_rounds"] = row["answer"] not in stored_values
+    full["summary"]["unseen_absent_from_all_stored_rounds"] = sum(
+        row["absent_from_all_stored_rounds"] for row in unseen)
     return dict(
         block={k: chain[k] for k in ("block", "block_hash", "block_timestamp", "proxy")},
         phases=phases, phase_switch=boundaries, heartbeat=heartbeat, provenance=provenance,
@@ -377,7 +401,7 @@ def replay(destination, reference):
         receipts=receipts, chain_sha256=sha(raw["chain.json"]), labels_sha256=label_digest,
         issuer_labels=dict(total_to_cutoff=sum(day <= last for day in labels), first=min(labels), last=last,
                            finalized_through=official_date, cutoff=cutoff),
-        full=analyze(rounds, labels, first, last, heartbeat, observed_through=chain["block_timestamp"]),
+        full=full,
         review_window=analyze(rounds, labels, WINDOW, last, heartbeat, observed_through=chain["block_timestamp"]),
         review_label_cohort=analyze(rounds, labels, date(2025, 9, 29), last, heartbeat,
                                     observed_through=chain["block_timestamp"])["summary"],

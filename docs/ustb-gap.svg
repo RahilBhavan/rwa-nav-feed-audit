@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 364" role="img" aria-labelledby="title description">
-<title id="title">Chainlink USTB</title>
+<title id="title">Chainlink USTB: 588 of 601 on the next issuer NAV change date</title>
 <desc id="description">Ethereum delivery history for 601 Superstate issuer value changes labelled 2024-06-27 through 2026-11-24. The first active post for 588 values fell on the next issuer value-change date and 4 fell one day after. 8 values were unseen by the pinned block. Timing for 1 is unknown because the pinned issuer history ends before the next value change. Issuer value-change dates are a proxy for valuation dates. Publication times are unknown. Each mark uses the original label date.</desc>
 <rect width="680" height="364" fill="#F4F5EF"/>
 <g fill="#142E28" font-family="IBM Plex Sans, DejaVu Sans, sans-serif">
 <text x="34" y="65" font-family="Archivo, DejaVu Sans, sans-serif" font-weight="850" font-size="43">Chainlink USTB</text>
 <path d="M 350 122 H 640" stroke="#142E28" opacity="0.22"/>
-<text x="79" y="130" font-size="30" text-anchor="end" font-weight="600">588</text>
-<text x="96" y="118" font-weight="600" font-size="28">Next issuer</text>
-<text x="96" y="141" font-weight="600" font-size="28">value-change date</text>
+<rect x="26" y="88" width="203" height="37" fill="#DFFF5E"/>
+<text x="34" y="121" font-size="38" font-weight="750">588 of 601</text>
+<text x="34" y="149" font-size="28" font-weight="600">Next NAV change</text>
 <g id="next_change">
 <circle cx="350.00" cy="113.6" r="1.35"/>
 <circle cx="350.33" cy="116.4" r="1.35"/>
@@ -600,12 +600,12 @@
 </g>
 <path d="M 350 177 H 640" stroke="#142E28" opacity="0.22"/>
 <text x="79" y="185" font-size="30" text-anchor="end" font-weight="600">4</text>
-<text x="96" y="185" font-weight="600" font-size="28">One day after</text>
+<text x="96" y="185" font-weight="600" font-size="28">Day after</text>
 <g id="after">
-<circle cx="361.53" cy="177" r="4.3" fill="#DFFF5E" stroke="#142E28" stroke-width="1.7"/>
-<circle cx="370.10" cy="177" r="4.3" fill="#DFFF5E" stroke="#142E28" stroke-width="1.7"/>
-<circle cx="391.52" cy="177" r="4.3" fill="#DFFF5E" stroke="#142E28" stroke-width="1.7"/>
-<circle cx="631.76" cy="177" r="4.3" fill="#DFFF5E" stroke="#142E28" stroke-width="1.7"/>
+<circle cx="361.53" cy="177" r="4.3"/>
+<circle cx="370.10" cy="177" r="4.3"/>
+<circle cx="391.52" cy="177" r="4.3"/>
+<circle cx="631.76" cy="177" r="4.3"/>
 </g>
 <path d="M 350 226 H 640" stroke="#142E28" opacity="0.22"/>
 <text x="79" y="234" font-size="30" text-anchor="end" font-weight="600">8</text>
@@ -622,12 +622,12 @@
 </g>
 <path d="M 350 275 H 640" stroke="#142E28" opacity="0.22"/>
 <text x="79" y="283" font-size="30" text-anchor="end" font-weight="600">1</text>
-<text x="96" y="283" font-weight="600" font-size="28">Unknown</text>
+<text x="96" y="283" font-weight="600" font-size="28">No successor</text>
 <g id="unknown">
 <circle cx="640.00" cy="275" r="4" fill="#F4F5EF" stroke="#142E28" stroke-width="2"/>
 </g>
 <text x="350.00" y="319" font-size="28" text-anchor="start">Jun’24</text>
 <text x="640.00" y="319" font-size="28" text-anchor="end">Nov’26</text>
-<text x="34" y="319" font-size="28">Superstate</text>
+<text x="34" y="319" font-size="28">Issuer labels</text>
 </g>
 </svg>

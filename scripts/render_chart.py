@@ -28,13 +28,15 @@ def render(report):
     check(set(counts) <= {"next_change", "after", "unseen", "unknown"}
           and all(row["status"] != "after" or
                   (date.fromisoformat(row["first_post_et"][:10]) -
-                   date.fromisoformat(row["next_issuer_value_change_date"])).days == 1 for row in rows),
+                   date.fromisoformat(row["next_issuer_value_change_date"])).days == 1 for row in rows)
+          and all(row["status"] != "unknown" or row.get("next_issuer_value_change_date") is None
+                  for row in rows),
           "delivery status differs from the displayed categories")
 
     def x(day):
         return LEFT + (RIGHT - LEFT) * (day - start).days / (end - start).days
 
-    title = "Chainlink USTB"
+    title = f"Chainlink USTB: {counts['next_change']} of {len(rows)} on the next issuer NAV change date"
     alt = (f"Ethereum delivery history for {len(rows)} Superstate issuer value changes labelled {start} "
            f"through {end}. The first active post for {counts['next_change']} values fell on the next issuer "
            f"value-change date and {counts['after']} fell one day after. {counts['unseen']} values were "
@@ -49,21 +51,25 @@ def render(report):
         f'<rect width="{WIDTH}" height="{HEIGHT}" fill="{PAPER}"/>',
         f'<g fill="{INK}" font-family="IBM Plex Sans, DejaVu Sans, sans-serif">',
         f'<text x="34" y="65" font-family="Archivo, DejaVu Sans, sans-serif" '
-        f'font-weight="850" font-size="43">{title}</text>',
+        'font-weight="850" font-size="43">Chainlink USTB</text>',
     ]
     bands = [
-        ("next_change", ("Next issuer", "value-change date"), 122),
-        ("after", ("One day after",), 177),
-        ("unseen", ("Unseen",), 226),
-        ("unknown", ("Unknown",), 275),
+        ("next_change", "Next NAV change", 122),
+        ("after", "Day after", 177),
+        ("unseen", "Unseen", 226),
+        ("unknown", "No successor", 275),
     ]
-    for status, lines, y in bands:
+    for status, label_text, y in bands:
         body.append(f'<path d="M {LEFT} {y} H {RIGHT}" stroke="{INK}" opacity="0.22"/>')
-        body.append(f'<text x="79" y="{y + 8}" font-size="30" text-anchor="end" '
-                    f'font-weight="600">{counts[status]}</text>')
-        for i, line in enumerate(lines):
-            line_y = y + 8 + i * 23 - (12 if len(lines) > 1 else 0)
-            body.append(f'<text x="96" y="{line_y}" font-weight="600" font-size="28">{line}</text>')
+        if status == "next_change":
+            body.append(f'<rect x="26" y="{y - 34}" width="203" height="37" fill="{HIGHLIGHT}"/>')
+            body.append(f'<text x="34" y="{y - 1}" font-size="38" font-weight="750">'
+                        f'{counts[status]} of {len(rows)}</text>')
+            body.append(f'<text x="34" y="{y + 27}" font-size="28" font-weight="600">{label_text}</text>')
+        else:
+            body.append(f'<text x="79" y="{y + 8}" font-size="30" text-anchor="end" '
+                        f'font-weight="600">{counts[status]}</text>')
+            body.append(f'<text x="96" y="{y + 8}" font-weight="600" font-size="28">{label_text}</text>')
         body.append(f'<g id="{status}">')
         for row, label in zip(rows, labels):
             if row["status"] != status:
@@ -73,8 +79,7 @@ def render(report):
                 row_y = y + ((label - start).days % 7 - 3) * 2.8
                 body.append(f'<circle cx="{pos:.2f}" cy="{row_y:.1f}" r="1.35"/>')
             elif status == "after":
-                body.append(f'<circle cx="{pos:.2f}" cy="{y}" r="4.3" fill="{HIGHLIGHT}" '
-                            f'stroke="{INK}" stroke-width="1.7"/>')
+                body.append(f'<circle cx="{pos:.2f}" cy="{y}" r="4.3"/>')
             elif status == "unseen":
                 body.append(f'<rect x="{pos-0.8:.2f}" y="{y-5}" width="1.6" height="10"/>')
             else:
@@ -84,7 +89,7 @@ def render(report):
     for day, anchor in ((start, "start"), (end, "end")):
         label = f"{MONTHS[day.month - 1]}’{day.year % 100:02d}"
         body.append(f'<text x="{x(day):.2f}" y="319" font-size="28" text-anchor="{anchor}">{label}</text>')
-    body.append('<text x="34" y="319" font-size="28">Superstate</text>')
+    body.append('<text x="34" y="319" font-size="28">Issuer labels</text>')
     return "\n".join(body + ["</g>", "</svg>", ""])
 
 

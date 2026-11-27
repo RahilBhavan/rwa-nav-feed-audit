@@ -47,3 +47,9 @@ Use the captured November 24 official NAV date for the historical labels and the
 ## 2026-11-27 — Close the three-round quality loop
 
 Round 3 scored 8/10 on the published research commit 75fe51c. Scores rose from 3 to 5 to 8. The authorized round limit was reached. The final review and handoff commit changes documentation and records only. The dashboard compares exact commit hashes, so the scored research revision precedes this closeout.
+
+## 2026-11-27 — Reopen after the round-three review
+
+Rahil reopened the quality loop. The implementation slice starts from `0e3936364167fe0e504a2c49eb004371e4e71f87` and addresses the agent-owned gaps in the round-three review. Preserve the independent ratings and findings at their reviewed revision. The next independent assessment applies to the revised evidence and artifacts.
+
+Capture the Chronicle consumer from deployment through the common Ethereum pin. Use the router activation to start the shared label cohort and a second keyless provider to check event completeness. Report date outcomes over the same labels and paired times over exact matches with finalized successors. Retain the unmatched early writes, the later adapter deployment date and the right-censored final label in the record. Add the 2024 split for Chainlink, check unseen values against both stored aggregators and use the explicit date proxy in the revised chart and copy.

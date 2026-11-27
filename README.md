@@ -1,22 +1,26 @@
-# USTB NAV feed audit: 588 of 593 matched changes posted on the next issuer value-change date
+# How quickly do Ethereum feeds post Superstate’s USTB NAV?
 
-![Chainlink’s Ethereum USTB delivery timeline. 588 changes posted on the next issuer value-change date, four a day after, eight unseen by the pin and one with unknown timing.](docs/ustb-gap.svg)
+Chainlink posted **588 of 601 USTB NAV values on the next date Superstate’s labelled NAV changed**, usually around **9:10 a.m. New York time**. Four appeared a day after that date. Eight were unseen at the study cutoff, including seven from 2024. The last value appeared onchain, but the issuer history ends before its next change. The count covers June 27, 2024 through November 24, 2026 issuer labels.
 
-Across June 27, 2024 to November 24, 2026 issuer labels, Chainlink’s Ethereum USTB feed posted **588 of 593 matched changes on the next issuer value-change date**. Four posted a day after it, and the final match has no following finalized issuer change in the capture. All 889 active observations matched an issuer NAV through the pinned block. Eight of 601 distinct issuer values were unseen on the active proxy by that block.
+![Chainlink’s Ethereum USTB delivery timeline by issuer label date. 588 of 601 posted on the next issuer NAV change date, four a day after, eight unseen by the pin and one with no finalized successor.](docs/ustb-gap.svg)
 
 ## Results
 
-**582 of 593** changed answers posted on the literal next NYSE session date. Exactly one session elapsed for 584, including two Saturday posts. Issuer value-change dates approximate the valuation schedule. The issuer’s actual strike and publication times are unknown. Chainlink identifies its source as the Asset Manager API and names Superstate as the auditor in its directory.
+In the [340-label shared window](docs/RESULTS.md#chronicle-comparison), Chainlink posted 337 values on the next NAV change date and the Chronicle consumer posted 236. The two feeds left one and 93 exact values unseen respectively.
+
+**582 of 593** Chainlink changed answers posted on the literal next NYSE session date. Exactly one session elapsed for 584, including two Saturday posts. Issuer value-change dates approximate the valuation schedule. The issuer’s actual strike and publication times are unknown. Chainlink identifies its source as the Asset Manager API and names Superstate as the auditor in its directory.
 
 [Results and chart](docs/RESULTS.md) · [Method](docs/METHOD.md) · [Sources and digests](docs/SOURCES.md) · [Draft posts](posts/DRAFTS.md)
 
 ## How it works
 
-The primary pair is the USTB NAV per Share proxy on Ethereum and Superstate’s USD NAV/share history. The comparison verifies both historical proxy phases and uses the state at block **26,503,879** as its cutoff. The shorter [Chronicle comparison](docs/RESULTS.md#chronicle-comparison) matches all seven sampled values on both feeds. The original six-product screen also found dated Franklin BENJI/FOBXX filed market-based NAV and USDY LLC accrued note principal per token. OUSG accounting supports a return comparison. BUIDL and USYC lacked a suitable public offchain series in the sources checked.
+The primary pair is the USTB NAV per Share proxy on Ethereum and Superstate’s USD NAV/share history. The comparison verifies both historical proxy phases and uses the state at block **26,503,879** as its cutoff. The [Chronicle comparison](docs/RESULTS.md#chronicle-comparison) uses the complete pinned consumer history and a common label cohort from July 2025 through November 24, 2026. The original six-product screen also found dated Franklin BENJI/FOBXX filed market-based NAV and USDY LLC accrued note principal per token. OUSG accounting supports a return comparison. BUIDL and USYC lacked a suitable public offchain series in the sources checked.
+
+[NavBridge’s simulated oracle data](docs/SOURCES.md#research-plan-leads) and [Chainlink’s published heartbeat](docs/SOURCES.md#ustb) provide reference points. This audit measures delivery on real data, lists the issuer values skipped through the cutoff and checks delivered values for exact agreement.
 
 ## Run it
 
-Requires Python 3.10+ and IANA timezone data. PDF extraction requires Poppler’s `pdftotext`. All fetches are public reads. Run the capture commands through the host workload scheduler where one is required. Data and receipts are written under ignored `data/`.
+Requires Python 3.10+ and IANA timezone data. PDF extraction requires Poppler’s `pdftotext`. The method examples use optional `jq`. All fetches are public reads. Run the capture commands through the host workload scheduler where one is required. Data and receipts are written under ignored `data/`.
 
 ```sh
 python3 -m unittest discover -s tests -v
@@ -31,7 +35,7 @@ python3 scripts/report_checks.py capture
 python3 scripts/report_checks.py replay > data/ousg/results.json
 ```
 
-The feed replay verifies both chain captures and the normalized pre-cutoff issuer history before it reports round-level joins, daily gaps and month ends. The raw full-response hash can change as the source adds later dates. If an archival endpoint is unavailable, pass a public, archive-capable URL with `--rpc` and rerun the capture at the same blocks. See [input verification and commands](docs/METHOD.md#replay-and-verification) for the USDY reports and EDGAR options.
+The Chainlink replay verifies both chain captures and the normalized pre-cutoff issuer history before it reports round-level joins, daily gaps and month ends. The raw full-response hash can change as the source adds later dates. If an archival endpoint is unavailable, pass a public, archive-capable URL with `--rpc` and rerun the capture at the same blocks. Chronicle uses Blockscout v2 for discovery, MEV Blocker for the full log sweep and batched receipt/header checks, and dRPC for historical state. To change the log transport or range size, use `--log-rpc`, `--log-span` and `--log-batch`. See [input verification and commands](docs/METHOD.md#replay-and-verification) for the USDY reports and EDGAR options.
 
 Live issuer replay skips EDGAR by default. Set `SEC_USER_AGENT` locally to genuine organization identification and an authorized nonpersonal contact to include EDGAR. Add `--verify-indices` to check submission identities and acceptance times. A one-time generic-client test returned HTTP 403 for the September index and XML. The offline command uses the pinned filing excerpts and records both acceptance times from the public filing indices.
 
@@ -50,7 +54,7 @@ Public repository: [RahilBhavan/rwa-nav-feed-audit](https://github.com/RahilBhav
 - [Method](docs/METHOD.md) defines the screen, clocks and extraction steps.
 - [Sources](docs/SOURCES.md) lists provenance, retrieval routes and capture hashes.
 - [Decisions](docs/DECISIONS.md) records the scope decisions.
-- [Quality review](docs/QUALITY.md) records the final three-round assessment and remaining gaps.
+- [Current quality review](docs/QUALITY.md) records the independent assessment of the previous revision.
 
 ## Sources
 
@@ -58,7 +62,7 @@ Superstate, Circle/Hashnote and Ondo publish the series checked in November 2026
 
 ## Scope and limits
 
-The comparison is retrospective. The issuer date supplies no publication clock. The final block bounds onchain follow-up and the captured official NAV date bounds issuer labels. The Chronicle comparison covers a shorter shared window. This independent project has no affiliation with the providers.
+The comparison is retrospective. The issuer date supplies no publication clock. The final block bounds onchain follow-up and the captured official NAV date bounds issuer labels. The Chronicle comparison starts after router activation and uses the same issuer and chain cutoffs for both feeds. This independent project has no affiliation with the providers.
 
 ## License
 

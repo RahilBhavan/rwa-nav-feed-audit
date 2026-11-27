@@ -59,6 +59,23 @@ def describe(numbers):
     return dict(n=len(values), min=values[0], p50=quantile("0.5"), p90=quantile("0.9"), max=values[-1])
 
 
+DELIVERY_STATUSES = ("next_change", "before", "after", "unseen", "unknown")
+
+
+def delivery_counts(rows):
+    counts = Counter(row["status"] for row in rows)
+    return {status: counts[status] for status in DELIVERY_STATUSES}
+
+
+def delivery_status(post, successor, through_et, *, observed_value, changed):
+    if post and changed and successor:
+        offset = (post.date() - successor).days
+        return "next_change" if offset == 0 else "after" if offset > 0 else "before"
+    if not observed_value and successor and successor < through_et:
+        return "unseen"
+    return "unknown"
+
+
 def analyze(rounds, labels, first, last, heartbeat, *, observed_through):
     # Record every start of a run of equal values. A later reappearance is a
     # separate candidate, so a repeated value cannot silently imply one date.
@@ -139,15 +156,19 @@ def analyze(rounds, labels, first, last, heartbeat, *, observed_through):
             continue
         row = first_post.get(day)
         successor = next_changes.get(day)
-        if row and row["changed"] and successor:
-            offset = row["days_from_next_issuer_value_change"]
-            status = "next_change" if offset == 0 else "after" if offset > 0 else "before"
-        elif row is None and successor and successor < through_et and labels[day] not in covered:
-            status = "unseen"
-        else:
-            status = "unknown"
+        post = datetime.fromisoformat(row["visible_et"]) if row else None
+        status = delivery_status(post, successor, through_et, observed_value=labels[day] in covered,
+                                 changed=row is not None and row["changed"])
         delivery.append(dict(label=day, answer=labels[day], next_issuer_value_change_date=successor,
-                             first_post_et=row["visible_et"] if row else None, status=status))
+                             first_post_et=row["visible_et"] if row else None, status=status,
+                             days_from_next_issuer_value_change=(post.date() - successor).days
+                             if post and successor else None))
+    split = date(2025, 1, 1)
+    periods = []
+    for lower, upper in ((first, min(last, split - DAY)), (max(first, split), last)):
+        if lower <= upper:
+            group = [r for r in delivery if lower <= r["label"] <= upper]
+            periods.append(dict(first=lower, last=upper, total=len(group), counts=delivery_counts(group)))
     trading_month_ends = [
         d for d in days(first, last) if nyse_session(d)
         and d.month != next_nyse_session(d).month
@@ -194,6 +215,7 @@ def analyze(rounds, labels, first, last, heartbeat, *, observed_through):
             r["posted_on_next_issuer_value_change_date"] is True for r in new),
         next_issuer_value_change_unknown=sum(r["next_issuer_value_change_date"] is None for r in new),
         delivery_statuses=dict(sorted(Counter(r["status"] for r in delivery).items())),
+        delivery_by_period=periods,
         changed_label_hours=describe(r["label_hours"] for r in new),
         all_joined_label_hours=describe(r["label_hours"] for r in cohort if r["label_hours"] is not None),
         changed_et_minutes_after_midnight=describe(

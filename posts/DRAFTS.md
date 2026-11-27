@@ -4,9 +4,9 @@ Evidence links sit outside each draft. These drafts are text-only.
 
 ## Typical timing
 
-Chainlink’s Ethereum USTB feed posted 588 of 593 matched changes on the next date Superstate’s labelled NAV changed. The study covers June 2024 to November 2026. The final match has no next change in the pinned issuer data.
+Chainlink posted 588 of 601 Superstate USTB NAVs on the next date the issuer’s labelled NAV changed. Eight values never appeared in the Ethereum feed through the study cutoff in November 2026. Seven of those eight were from 2024.
 
-[Round-by-round timing](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#update-timing-and-intervals)
+[Delivery counts and unseen values](https://github.com/RahilBhavan/rwa-nav-feed-audit/blob/main/docs/RESULTS.md#full-history-and-coverage)
 
 ## The Friday NAV
 

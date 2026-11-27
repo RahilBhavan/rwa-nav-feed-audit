@@ -1,106 +1,117 @@
-# Quality review, round 2
+# Quality review, round 3
 
-Independent review under rubric v1 of commit `9752755de1d97de83ca42f0b1965e5be9aadd19f`, carried out 2026-11-27 UTC. The reviewer did not write any of the reviewed code or documents. Scores and gaps are also recorded in [`QUALITY.json`](../QUALITY.json).
+This is an independent review under rubric v1 of commit `75fe51c317caf3f9c73029339983f5a048b80213`, carried out on 2026-11-27 UTC. The reviewer wrote none of the reviewed code or documents. The commit history does not record which model built the project. The dashboard owner should confirm that the builder came from a different model family, as the rubric requires. Scores and gaps are also recorded in [`QUALITY.json`](../QUALITY.json).
 
-**Overall: 5/10, capped by the post kit.** Round 1 scored 3/10. The USTB delivery study is now built, pinned and reproducible, and the core counts hold up exactly. Two clock problems keep it short of a 9. First, the headline sentence states a stricter claim than the metric behind it supports. Second, the last two issuer labels in scope are API forward fills, not published NAVs. The chart and three of the four drafts inherit both problems.
+**Overall: 8/10.** Answer, usefulness and the post kit share the cap. Previous rounds scored 3/10 and 5/10. Every round 2 defect is fixed. The headline is now true and is the strongest count the evidence supports. The forward-filled labels are cut at the official NAV date. The chart is honest. The drafts no longer invite a staleness reading. An independent recomputation from raw inputs reproduced every headline number exactly. Three things keep the project from a 9:
+
+- The README does not answer the question in plain words.
+- The Chronicle cross-check uses 12 days of a public history that runs to about 16 months.
+- The results never say that 7 of the 8 skipped values fall in the first six months.
 
 | Dimension | Score | Reason |
 | --- | ---: | --- |
-| Answer | 6 | The headline is clear but false as worded. 582 of 593 changes, not 584, arrived on the next NYSE session date. Using the issuer's own valuation calendar gives a stronger answer, 589 of 593, which the study does not report. |
-| Evidence | 6 | Every reported number reproduces, and the layers and limits are well kept. Forward-filled labels are treated as observations. The −5.86 bp extreme is not linked to the skipped July 26, 2024 value. The 'published after' caveat understates the evidence. |
-| Reproducibility | 7 | A clean clone reproduced every USTB metric and the exact chart bytes from a fresh dRPC capture, and the OUSG and USDY checks also reproduced. The pinned label digest includes the two forward-filled labels, so a capture after Superstate publishes the November 25 NAV will fail replay. |
-| Usefulness | 7 | The measured delivery schedule, the eight skipped values and the forward-fill behaviour go beyond NavBridge's simulated data and the vendor's heartbeat parameter. It covers one oracle on one chain. |
-| Completeness | 8 | The reshaped brief is delivered: weekends, holidays, month-ends, heartbeat, a chart, a multi-day OUSG check, the USDY oracle and BENJI filing clocks. Nothing is half-built. |
-| Documentation | 8 | The documents are thorough, agree with the code and read without chat history. The remaining errors are small: the headline wording, the access date, the weekend interval count and a missed tie. |
-| Post kit | 5 | The chart title needs a footnote, and the chart plots two forward-fill points as data. Its bands are built in by construction, and a label overlaps a data point. Draft 1 reuses the 584 count. Drafts 2 and 3 invite a staleness reading the evidence does not support. |
-| Code | 7 | The code is clean and the tests are behavioural with failure paths. The logic where this review found defects (posting-date semantics, trailing fills, month-end, digest tamper) is untested. |
+| Answer | 8 | The headline is correct, unhedged and not overclaimed. It does not pass the 10-second test, because the question is never stated and the H1 uses the coined term "next issuer value-change date". The plain answer, about 09:10 New York time on the next valuation morning, appears further down. |
+| Evidence | 9 | Every number checked traces to replay output or a cited source. The five layers stay separate, and each limit sits next to its claim. Two gaps are minor. RESULTS can state that the 8 unseen values appear in none of the 920 stored rounds. Chronicle completeness rests on one third-party index. |
+| Reproducibility | 10 | A fresh clone reproduced both pinned chain hashes, the normalized issuer digest and the exact chart bytes, even though the live financials bytes differed. The Chronicle, OUSG and live issuer replays also passed. Tests pass on Python 3.10 and 3.14. The only open item waits on time: a recapture after the issuer revises late-November labels. |
+| Usefulness | 8 | The project measures delivery on real data, lists the skipped values and checks fidelity exactly. That goes beyond NavBridge's simulated data and the vendor's heartbeat setting. Three things are missing. The results do not show that reliability improved after 2024. The comparison with a second oracle is too small to rank the feeds, although enough history is public. The README never names the prior art. |
+| Completeness | 9 | The reshaped brief is delivered: the availability gate, then the USTB study across weekends, holidays, month-end, heartbeat, deviation, a chart and review. The Chronicle pair covers only a short sample of its public history. |
+| Documentation | 9 | The documents agree with the code and with each other on every number checked. Some labels are stale ("Round 2" link text, the HANDOFF title). Prior art is missing from the README. `jq` is used in METHOD but not listed. |
+| Post kit | 8 | The chart passes its automated checks. Drafts 2 to 4 are accurate and each makes one claim. Draft 1 drops the 8 values that never posted, and its wording is hard to parse. The chart title "Chainlink USTB" states no point. The lone "Superstate" label at bottom left reads as an orphan word. |
+| Code | 9 | The tests are behavioural and cover the round 2 gaps: Saturday posts, Columbus Day, the digest staying fixed under live revision, the 23:59:59 boundary and a tampered reference. Chronicle capture verification has no failure-path tests. The `after` status from `analyze()` is never asserted directly. |
 
 ## What the reviewer ran
 
-All commands ran in a fresh clone at the reviewed head, in a scratch directory outside the repository. Heavy captures ran through the host workload scheduler.
+All commands ran in a fresh clone at the reviewed head, in a scratch directory outside the repository. Captures ran through the host workload scheduler and used public, keyless endpoints only.
 
-- `python3 -m unittest discover -s tests`: **21/21 pass** on Python 3.14.8 and on Python 3.10.
-- `python3 scripts/issuer_history.py` exits 0. The gate is `{USTB, BENJI}` 2/6 and the benchmarks are `{USTB, USDY, BENJI}` 3/6.
-- `python3 scripts/feed_history.py capture` read from public dRPC, then `replay`, then `render_chart.py … --check`. All exited 0. The replay JSON is identical to the builder's except for receipt timestamps. Results:
-  - 920 stored rounds: 46 in phase 1 (40 active) and 874 in phase 2 (849 active). All 920 match an issuer value, and 31 are archival only.
-  - 889 of 889 active observations match an issuer value exactly. 593 of 601 distinct values are covered.
-  - Session counts are {0: 1, 1: 584, 2: 8}. The median is 37.33 h, the 90th percentile 85.26 h and the maximum 110.18 h.
-  - 283 intervals exceed 95,400 s, and the longest is 95,484 s.
-  - The month-end count is 29/28/27. Daily extremes match RESULTS: −5.8630 bp on 2024-07-29, −5.8041 bp on 2024-09-02, −4.2938 bp on 2025-10-14 and −3.1080 bp on 2025-11-11.
-  - In the window, 430/430 observations match, coverage is 289/289, the issuer cohort is 288/288, sessions are {1: 284, 2: 5}, 51 of 58 Friday changes posted Monday and there were 122 weekend rounds.
-- `python3 scripts/report_checks.py capture`, then `replay`: 14 pairs, all PDF digests and the chart bytes match. The minimum, median and maximum residuals are 0.0000072, 0.0000223 and 0.0142862 bp, with 13 of 14 within 0.000071 bp. November 23 gives 3.07635256 vs 3.07633878 bp.
-- `python3 scripts/report_checks.py usdy-oracle`, run with the four digest-verified May 2025 PDFs: block hashes and the midnight crossing verified, and the evidence digest matches. The oracle agrees with the retrospective range and matches the report to six decimals on all four dates. The largest gap is 0.0034 bp.
-- `python3 scripts/issuer_history.py --live` with no SEC identity: exit 0. Both USTB windows and the OUSG and USDY windows match, USYC refreshed, and both EDGAR reads were skipped with the remedy text. Verification is marked incomplete. The reviewer had no authorized SEC identification, so live EDGAR was not attempted.
-- Two direct public reads of the Superstate API (an NAV window to 2026-11-28 and the financials endpoint) at 04:27 UTC, plus a 1360 px render of the committed SVG.
+- **Tests.** `python3 -m unittest discover -s tests`: **25/25 pass** on Python 3.14.8 and 3.10.
+- **USTB capture.** `python3 scripts/feed_history.py capture` from public dRPC at 05:05 UTC, then `replay`, then `render_chart.py … --check`. All three exited 0.
+  - The chain hash `da192d93…` and the normalized label hash `f71f3296…` matched the pinned references.
+  - The live financials bytes differed from the pinned snapshot but still reported `official.nav_date = 2026-11-24`.
+  - The SVG SHA-256 is `4e7a2a20…5b97452`, matching the post receipt.
+- **Independent recomputation.** A separate script read the raw `chain.json` and `issuer.json` without the project's metrics code. It rebuilt the active stream: phase 1 rounds 1–40, then phase 2 from round 26 at the switch-block time. It then classified every value spell from June 27, 2024 to November 24, 2026. Results:
+  - 1,057 labels, 889 active rounds (40 in phase 1), and 889 of 889 matching an issuer value.
+  - 601 spell starts: 588 posted on the next change date, 4 one day after, 8 unseen and 1 unknown.
+  - 582 posted on the literal next NYSE session date. Sessions elapsed were {0: 1, 1: 584, 2: 8}.
+  - The four late labels (2024-08-01, 2024-08-27, 2024-10-31, 2026-10-30) and the eight unseen dates were identical to RESULTS.
+- **Secondary USTB figures.** The review-window column, timing table, intervals, daily-gap rows, the July 29 arithmetic, the month-end counts (29/28/26/27) and the September 30 example all match the replay.
+- **Chronicle.** `python3 scripts/chronicle_check.py capture`, then `replay`: 25 events. All seven paired time differences match the RESULTS table, from +1,176 s to −11,100 s.
+- **OUSG.** `python3 scripts/report_checks.py capture`, then `replay`: 14 pairs, and every PDF and chart byte check passed. The minimum, median and maximum residuals are 0.0000072, 0.0000223 and 0.0142862 bp, with 13 of 14 at or below 0.000071 bp. These match RESULTS.
+- **Issuer history.** `python3 scripts/issuer_history.py` (offline) and `--live`: the gate is {USTB, BENJI} 2/6 and the benchmarks are {USTB, USDY, BENJI} 3/6. The live run skipped EDGAR because no authorized SEC identity was set, and it marked verification incomplete, as documented.
+- **Not rerun.** The USDY oracle check needs the issuer's 277 MB archive. `report_checks.py` is unchanged since round 2, which reproduced it.
+- **Chart.** The SVG was rendered at 342, 680 and 1360 px. Labels do not collide. Mark counts are 588, 4, 8 and 1.
+- **Chronicle history check.** One keyless Blockscout v2 read at block 23,500,000 confirmed that the Chronicle consumer emitted `Poked` events in September 2025.
+- **Privacy.** A scan of the tracked files found no machine paths, personal contacts or keys.
 
 ## Findings
 
-### 1. "On the next NYSE session date" is not what 584 measures
+### 1. The answer needs a plain-language first line (answer, agent)
 
-The metric counts NYSE sessions after the label, through the ET posting date. Two changes posted on a Saturday after one session:
+The README's H1 reads "588 of 593 matched changes posted on the next issuer value-change date". It is exact, but a stranger has to decode "issuer value-change date" and work out the question. The evidence supports a plainer answer: Chainlink's Ethereum USTB feed posted each Superstate NAV on the next valuation morning, at a median of 09:09:47 ET, for 588 of 601 values. Four posted a day late, 8 never posted and 1 is too recent to classify. The coined term can become the definition beneath that answer. Using 601 as the denominator also puts the skipped values into the headline claim, instead of leaving them in the next sentence.
 
-| Label | Posted (ET) | Sessions | On next session date? |
-| --- | --- | ---: | --- |
-| 2024-08-01 (Thu) | Sat 2024-08-03 09:09:23 | 1 | No, a day late |
-| 2024-10-31 (Thu, month-end) | Sat 2024-11-02 09:09:35 | 1 | No, a day late |
+### 2. Reliability changed after 2024 (usefulness, agent)
 
-Literally, **582 of 593** changes arrived on the next NYSE session date. RESULTS' table row ("observed after one NYSE session") is correct. The README title, README paragraph 1, RESULTS paragraph 1 and draft 1 are not. The month-end sentence has the same issue: on the posting-date definition, 26 of 28 observed month-end values arrived on the next session date.
+Grouping the replay's delivery statuses by label year gives:
 
-### 2. The issuer's own calendar gives the stronger answer
+| Labels | On next change date | One day late | Unseen | Unknown | Total |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Jun 27 – Dec 31, 2024 | 118 | 3 | 7 | 0 | 128 |
+| Jan 1, 2025 – Nov 24, 2026 | 470 | 1 | 1 | 1 | 473 |
 
-Six of the nine NYSE exceptions fall the day after a bond-market holiday when Superstate's own labels carry the prior NAV. These are Columbus Day 2024-10-14, 2025-10-13 and 2026-10-12, and Veterans Day 2024-11-11, 2025-11-11 and 2026-11-11. The fund did not value on those days, so a change posted two NYSE sessions later was still on the next valuation date. The zero-session case (posted 2025-01-09, an NYSE closure) was a Superstate valuation date.
+An integrator would care most about this split. The repository does not report it. Compute it in `ustb_metrics.analyze`, add a test and show it in RESULTS.
 
-The reviewer took valuation dates to be the starts of value spells in the issuer series, up to the official NAV date. On that calendar, **589 of 593** changes posted on the next valuation date. The four one-day-late cases are 2024-08-01, 2024-08-27, 2024-10-31 and 2026-10-30, and **8** issuer values never appeared. That is the strongest headline the evidence supports, and it needs no external holiday calendar. The NYSE figure can stay as a secondary row.
+### 3. The Chronicle comparison can cover its full public history (usefulness and completeness, agent)
 
-### 3. The last labels in scope are forward fills
+The capture's own router check shows the Chronicle consumer has been the router target since block 22,926,115 (July 2025), and Blockscout serves its `Poked` events from at least September 2025. The comparison stops at 7 values because `consumer_logs` walks at most four index pages. RESULTS correctly says the sample supports no ranking. Paging the full history, with paced requests and the existing per-log inclusion checks, would turn the anecdote into a two-oracle delivery comparison covering about 340 values. Few other public studies offer that.
 
-The pinned capture (2026-11-27 04:00 UTC) gives 11/25, 11/26 and 11/27 the 11/24 NAV, 11.291441, and `official.nav_date` is 2026-11-24. A request ending 2026-11-28, made at 04:27 UTC, also returned a **future-dated** 11/28 label with the same value. The API fills dates without a published NAV.
+### 4. Evidence refinements (evidence, agent)
 
-November 25 was an ordinary valuation day, so its fill will be replaced. As a result:
+- None of the 8 unseen values appears in any of the 920 stored rounds, including the 31 rounds on inactive aggregators. RESULTS can say so, with a replay field and a test, instead of stopping at "cause unknown".
+- Chronicle event discovery depends on the Blockscout index. RPC checks confirm that each listed log was included in a block, but nothing confirms that no log was missed. Cross-check with chunked `eth_getLogs` calls or a second index.
 
-- the daily series ends in two 0 bp rows, which are the two dots on the zero line in the chart;
-- the label counts (1,059 / 883 / 426) include two non-observations;
-- the pinned label digest, and so every future capture-and-replay, depends on values Superstate will revise.
+### 5. Chart and drafts (post kit, agent; design approval is Rahil's)
 
-It also sharpens the reading of the daily gap metric. At 23:59:59 UTC on date D, the API most likely showed a fill of the previous NAV, which is what the feed held. The plotted gap is therefore a retrospective accrual gap, not staleness against a value a consumer could have read. The −1 bp weekday band and the −3 bp Friday band follow the bill yield. The −5.86 bp extreme is Friday accrual plus the skipped July 26, 2024 value.
+- **Draft 1.** It reports 588 of 593 without the 8 values that never posted. Rewrite it as one claim over 601 values that names the skipped ones. Drafts 2 (the Friday NAV), 3 (Veterans Day) and 4 (September month-end) are accurate line by line against the replay.
+- **Chart.** The title "Chainlink USTB" is a label, not a point. Use a claim of 20 words or fewer. Relabel the orphaned "Superstate" as "Superstate label date". Rename "Unseen" and "Unknown" so they read differently at a glance, for example "Never posted" and "Too recent". Rerun `render --check` and preflight, then update the hashes in `post-review.json` and HANDOFF.
 
-### 4. Chart and drafts
+### 6. Code (code, agent)
 
-- **Chart.** The title "USTB trailed Superstate's NAV" names the fund, not the feed, and holds only with the footnote above. It shows two fill artefacts at 0 bp. The "−5.86 · 2024-07-29" label overlaps a data point at 1360 px. The automated checks pass: 19 visible words, the byte check holds and the SHA-256 is `b06cb560…`. The fix is a delivery-schedule chart (589 next valuation date, 4 one day late, 8 never appeared) with a title that holds without a footnote.
-- **Drafts.** Draft 1 carries the 584 wording. Draft 3 (Veterans Day) is accurate line by line, but Superstate did not value on November 11, and the feed posted the November 10 NAV on the next valuation date. A reader will see oracle lag. Draft 2 compares against a Friday label that may not have been public until Monday. Draft 4 (September month-end) is sound. All four pass preflight. Editorial and design approval remain pending, and design approval is Rahil's.
+Add failure-path tests for Chronicle capture verification:
 
-### What holds up
+- a mismatched block hash or timestamp;
+- a log missing from its receipt;
+- index pages that overflow the page limit;
+- a router switch from a nonzero address;
+- an adapter end state that differs from the last event.
 
-- **Exact fidelity.** 920 of 920 stored and 889 of 889 active answers equal an issuer value.
-- **Phase join.** The crossover at blocks 20,464,406/407 is verified on-chain, and inactive spans are excluded and tested.
-- **Coverage.** 593 of 601. The eight skipped values are listed with dates.
-- **Heartbeat.** The heartbeat is treated as a directory setting, and the 84-second overshoot is not overclaimed.
-- **Provenance.** The caveat that the feed's source is the asset manager's API sits beside the claim.
-- **Other products.** The BENJI filing clocks, OUSG residuals and USDY oracle agreement reproduce exactly.
-- **Privacy.** Public files contain no machine paths, contacts or keys.
+Add an `analyze()` case that asserts the `after` status and the one-day offset.
 
-## Gaps and owners
+### 7. Documentation (documentation, agent)
 
-| # | Dimension | Owner | Fix |
-| --- | --- | --- | --- |
-| 1 | Answer | agent | Add next-NYSE-date and next-valuation-date fields. Lead with 589/593, and keep 582/593 and 584/593 with exact definitions. |
-| 2 | Evidence | agent | Cap label metrics at `official.nav_date`, drop or flag provisional daily rows, recompute the digest and counts, move the live window end to 11/24 and document the forward-fill behaviour. |
-| 3 | Reproducibility | agent | Same cutoff, plus a regression test that a revised trailing fill leaves the digest unchanged. |
-| 4 | Reproducibility | time | After 2026-11-30, run a fresh clean-clone capture, replay and render check, and record the result in HANDOFF. |
-| 5 | Post kit | agent | Replace the chart with the delivery-schedule chart, remove the fill points, fix the label collision, and update the SHA in post-review.json and HANDOFF. |
-| 6 | Post kit | agent | Rewrite drafts 1–3 around next-valuation-date delivery and rerun preflight. |
-| 7 | Code | agent | Add tests: Saturday post, Columbus Day carry, trailing fills, weekend month-end, the 23:59:59 boundary and a tampered reference digest. |
-| 8 | Documentation | agent | Fix the access date, the 121 weekend intervals, the 2025-03-15 interval tie, the month-end wording and the README's QUALITY link text. |
-| 9 | Usefulness | agent | Optional: add one more USTB feed (Chronicle, RedStone or another chain) for a cross-oracle comparison. |
-| 10 | Evidence | rahil | Optional: approve one bounded polling window on the public financials endpoint to bracket Superstate's publication time. |
+Update the README and docs/README link text to "current quality review". Retitle HANDOFF for the round that implements these fixes. Add a prior-art sentence to the README, and list `jq` as an optional tool.
 
-Gaps 1–3 and 5–7 are needed for a 9 or better on Answer, Evidence, Reproducibility, Post kit and Code. Gaps 4 and 10, live EDGAR identification, design approval and posting are pending items and do not lower the score.
+## What holds up
 
-## History
+- **Exact fidelity.** All 920 stored and all 889 active answers equal an issuer value. The phase crossover is verified on chain at blocks 20,464,406 and 20,464,407.
+- **Cutoff.** The cutoff is the earlier of the last complete UTC date and the official NAV date. The digest stays fixed across live revisions, which both a regression test and this round's fresh capture confirm. November 24's post is correctly left unclassified.
+- **Two date tests.** The NYSE-date test and the issuer value-change test are reported separately, with exact definitions. The Saturday posts and bond-market holiday carries are named.
+- **Daily-gap caveat.** The daily gaps are presented as retrospective, never as staleness against a NAV that was public at the time.
+- **Other products.** The BENJI filing clocks, OUSG residuals and USDY oracle agreement keep their own definitions and limits.
 
-| Round | Head | Overall | Cap |
-| --- | --- | ---: | --- |
-| 1 | pre-release local revision | 3 | Completeness, because the feed comparison was missing |
-| 2 | `9752755` | 5 | Post kit, from the clock and forward-fill issues |
+## Items that do not lower the score
 
-The round 1 narrative is preserved in this file's history at commit `9752755`.
+- **Time.** After 2026-11-30, rerun the clean-clone capture, replay and chart byte check once Superstate finalizes its late-November NAVs. Record the result in HANDOFF.
+- **Rahil.** Four decisions remain:
+  - design approval of the chart and draft texts;
+  - whether and when to post;
+  - optional live EDGAR verification with a genuine organizational `SEC_USER_AGENT`;
+  - an optional single polling window to measure when Superstate publishes its NAV.
+
+## Score history
+
+| Round | Head | Overall |
+| --- | --- | ---: |
+| 1 | unrecorded (pre-release local revision) | 3 |
+| 2 | `9752755` | 5 |
+| 3 | `75fe51c` | 8 |
+
+Orchestrator confirmation: GPT-6.2 Sol built the scientific slices. Each quality review ran as a fresh Claude Opus 5.5 task.

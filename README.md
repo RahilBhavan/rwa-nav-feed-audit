@@ -50,7 +50,7 @@ Public repository: [RahilBhavan/rwa-nav-feed-audit](https://github.com/RahilBhav
 - [Method](docs/METHOD.md) defines the screen, clocks and extraction steps.
 - [Sources](docs/SOURCES.md) lists provenance, retrieval routes and capture hashes.
 - [Decisions](docs/DECISIONS.md) records the scope decisions.
-- [Quality review](docs/QUALITY.md) records the current Round 2 assessment and follow-up scope.
+- [Quality review](docs/QUALITY.md) records the final three-round assessment and remaining gaps.
 
 ## Sources
 

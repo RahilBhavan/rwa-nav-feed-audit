@@ -1,87 +1,87 @@
 {
   "rubric_version": 1,
-  "round": 2,
+  "round": 3,
   "reviewer": "claude-opus-5-5",
-  "reviewed_head": "9752755de1d97de83ca42f0b1965e5be9aadd19f",
-  "reviewed_at": "2026-11-27T04:41:12Z",
+  "reviewed_head": "75fe51c317caf3f9c73029339983f5a048b80213",
+  "reviewed_at": "2026-11-27T05:09:47Z",
   "scores": {
-    "answer": 6,
-    "evidence": 6,
-    "reproducibility": 7,
-    "usefulness": 7,
-    "completeness": 8,
-    "documentation": 8,
-    "post_kit": 5,
-    "code": 7
+    "answer": 8,
+    "evidence": 9,
+    "reproducibility": 10,
+    "usefulness": 8,
+    "completeness": 9,
+    "documentation": 9,
+    "post_kit": 8,
+    "code": 9
   },
-  "overall": 5,
+  "overall": 8,
   "gaps": [
     {
       "dimension": "answer",
-      "issue": "The headline is false as worded. README title, README paragraph 1 and RESULTS paragraph 1 say 584 of 593 changes 'arrived on the next NYSE session date'. The metric behind 584 counts NYSE sessions elapsed through the posting date. Two changes were posted on Saturdays one day after the next session: the 2024-08-01 label at 2024-08-03 09:09:23 ET and the 2024-10-31 label at 2024-11-02 09:09:35 ET. Recomputed from the replay, 582 of 593 were posted on the next NYSE session date. The NYSE calendar also hides a stronger answer. Six of the nine NYSE exceptions are Columbus Day and Veterans Day in 2024, 2025 and 2026, when Superstate's own labels carry the prior NAV, so the fund did not value. Against Superstate's own valuation dates (spell starts, using labels up to the official NAV date), 589 of 593 changes posted on the next valuation date. Four were one day late (2024-08-01, 2024-08-27, 2024-10-31, 2026-10-30), and 8 values never appeared.",
-      "fix": "In ustb_metrics.analyze, add two per-change fields: posted_on_next_nyse_session_date (ET posting date equals the first NYSE session after the label) and posted_on_next_valuation_date (ET posting date equals the next issuer spell start after the label). Summarize both. Lead the README and RESULTS with the valuation-date count, for example: '589 of 593 changed USTB NAVs reached Chainlink's Ethereum feed on Superstate's next valuation date. 4 were a day late and 8 never appeared.' Keep 582/593 (NYSE date) and 584/593 (within one NYSE session) as secondary rows with their exact definitions. Name the four late cases and the bond-market-holiday carries in RESULTS.",
-      "owner": "agent"
-    },
-    {
-      "dimension": "evidence",
-      "issue": "The final labels in scope are API forward fills, not NAV observations. In the pinned capture (fetched 2026-11-27 04:00 UTC), the 11/25, 11/26 and 11/27 labels all equal the 11/24 NAV 11.291441, and financials official.nav_date is 2026-11-24. A reviewer read at 04:27 UTC with end_date=2026-11-28 returned a 11/28 label with the same value, which is a future date. November 25 was a normal valuation day. Its published NAV will replace the fill. The study counts both filled days as data: 1,059 labels to November 26, 883 comparison dates, 426 window labels, daily rows for 2026-11-25 and 2026-11-26 at 0 bp (the two dots on the zero line at the right edge of the chart), and the pinned USTB live window for November 20 to 26. SOURCES 'Capture boundary' describes the 11/25 and 11/26 values as retained labels, not as provisional fills.",
-      "fix": "In feed_history.replay, cap label-dependent metrics at min(block UTC date - 1, financials.official.nav_date). Drop or flag 'provisional' the daily rows after the official date. Recompute labels_sha256 and the ustb-capture.json reference, update every affected count in README, RESULTS, METHOD, STATE and HANDOFF, and move the pinned USTB live window to end on 2026-11-24. In METHOD, state that the API returns forward-filled labels for dates without a published NAV, including future dates. Weekend and holiday carries are therefore API fills, not valuation strikes, and the same-date label at 23:59:59 UTC was very likely unpublished at that instant.",
-      "owner": "agent"
-    },
-    {
-      "dimension": "reproducibility",
-      "issue": "The documented clean-clone path (capture, then replay) reproduced every USTB metric and the exact chart bytes today. It will stop working once Superstate publishes the November 25 NAV, which changes the 11/25 and 11/26 labels. The reference labels_sha256 covers those two forward-filled labels, so any later capture fails replay with 'historical issuer label/value checksum mismatch'. Full inputs are not committed, so no offline route around the capture exists. This is inferred from the forward-fill evidence. It has not been observed yet.",
-      "fix": "Apply the official-NAV-date cutoff from the evidence gap so that the pinned digest covers only published NAVs. Add a regression test with a synthetic issuer payload whose trailing filled label is revised after capture. The digest must stay stable and replay must pass.",
-      "owner": "agent"
-    },
-    {
-      "dimension": "reproducibility",
-      "issue": "Digest stability under issuer revision can only be confirmed after Superstate publishes its next NAVs (November 25 and 27).",
-      "fix": "After 2026-11-30, run a fresh capture in a clean clone at the pinned block, then replay and render --check, and record the result in HANDOFF.",
-      "owner": "time"
-    },
-    {
-      "dimension": "post_kit",
-      "issue": "The chart title 'USTB trailed Superstate's NAV' needs a footnote to be true and names the fund rather than the feed. What it plots is mostly built in by construction. It compares the feed at 23:59:59 UTC with a same-date label that the issuer most likely had not published yet. The result is two bands, about -1 bp on most weekdays and about -3 bp on Fridays (weekend accrual), and both track the Treasury bill yield. The -5.86 bp extreme on 2024-07-29 combines Friday accrual with the skipped 2024-07-26 value, and nothing on the chart or in RESULTS links the two. The two rightmost points at 0 bp are forward-fill artefacts. In the 1360 px render, the '-5.86' label overlaps a data point.",
-      "fix": "Replace the headline figure with a delivery-schedule chart from the replay. Plot one mark per issuer value from 2024-06-27 to the official NAV date, coded as 'next valuation date' (589), 'one day late' (4) and 'never appeared' (8). Use a title of 20 words or fewer that holds without a footnote, for example '589 of 593 USTB NAV changes reached Chainlink the next valuation day'. Keep the UTC-close series in RESULTS under an exact label (gap to the later-dated issuer label). Remove provisional days, check label collisions at 342 and 680 px, rerun render --check and update the SHA-256 values in post-review.json and HANDOFF.",
-      "owner": "agent"
-    },
-    {
-      "dimension": "post_kit",
-      "issue": "Draft 1 repeats the 584 count as 'one NYSE session after', but two of those changes posted on a Saturday. Drafts 2 and 3 report basis-point gaps against dated labels that Superstate very likely published on the same morning as the feed post (Veterans Day 2025: the issuer label carries the November 10 NAV, so the fund did not value on November 11). Readers will take both drafts as oracle staleness, a reading the evidence does not support. Draft 4 is sound.",
-      "fix": "Rebuild draft 1 on 589 of 593 by next valuation date. Rewrite draft 3: Superstate did not value on Veterans Day, and the feed posted the November 10 NAV on the next valuation date, November 12. Rewrite draft 2 around the timestamp 'Friday's NAV reached the feed Monday at 09:15 ET, the next valuation day'. Drop the gap against a label that may not have been public. Keep one number per post and the anchored RESULTS links, then rerun preflight and regenerate post-review.json.",
-      "owner": "agent"
-    },
-    {
-      "dimension": "code",
-      "issue": "The 21 tests are behavioural and cover parser, ABI, multicall, switch, chart and EDGAR failure paths. They miss the logic where this review found defects: the session-count vs posting-date semantics (a Saturday post after one session), forward-filled trailing labels, month-end selection (the 2024-10-31 value posted Saturday 2024-11-02 is counted 'one session later'), coverage and uncovered values, the 23:59:59 sampling boundary, and replay rejecting a labels_sha256 or chain_sha256 mismatch against the reference.",
-      "fix": "Add focused tests in tests/test_feed_history.py: a Friday label posted Saturday (1 session, not on the next session date); a Columbus Day carry (2 NYSE sessions, next valuation date); trailing fills after official.nav_date excluded from the digest and the daily rows; a month-end that posts on a weekend; a round at 23:59:59 vs 00:00:00 UTC; and replay with a tampered reference digest exiting 1.",
-      "owner": "agent"
-    },
-    {
-      "dimension": "documentation",
-      "issue": "Small inconsistencies. SOURCES opens with 'Accessed 2026-11-26', but the USTB and OUSG captures are dated 2026-11-27 UTC. RESULTS says all 122 weekend rounds had intervals of 95,400 to 95,472 s, but the window holds 121 such intervals. The full-history longest interval ties at 2025-03-15 15:40:11 UTC (95,484 s) and is not mentioned. The month-end '27 appeared one session later' includes a Saturday post. The README describes docs/QUALITY.md as the historical round-1 assessment.",
-      "fix": "Correct these sentences when the headline is rewritten. Date the USTB and OUSG captures 2026-11-27 UTC. Say '121 intervals ending on weekend rounds'. Mention the 2025-03-15 tie. Restate month-end on the posting-date definition (26 of 28 on the next session date, 27 within one session). Point the README at the current quality review.",
+      "issue": "The headline is now true and is the strongest count the evidence supports, but it does not pass the 10-second test. The README never states the question, and the H1 relies on the coined term 'next issuer value-change date'. The plain answer is that the feed posts each NAV on the next valuation morning, around 09:10 New York time. The README also gives no split by period: 7 of the 8 unseen values and 3 of the 4 late posts fall in the first six months.",
+      "fix": "Rewrite the README H1 and first paragraph as a question and a plain answer, then give the precise definition. Example: 'How fast does Chainlink's Ethereum USTB feed post Superstate's daily NAV? Usually the next valuation morning, about 09:10 New York time: 588 of 601 values. 4 were a day late, 8 never posted (7 of them in 2024) and 1 is too recent to classify.' Keep 'next date the issuer's labelled NAV changed' as the stated definition of the proxy. Make the same change in the first paragraph of RESULTS.",
       "owner": "agent"
     },
     {
       "dimension": "usefulness",
-      "issue": "The study measures one oracle on one chain. RESULTS states this limit. A measured delivery schedule, a skipped-value incident list and the forward-fill behaviour go beyond NavBridge's simulated data and the vendor's heartbeat parameter. A cross-oracle comparison would be the result most likely to be cited.",
-      "fix": "Optional extension: run the same join for one more USTB feed with public history, for example a Chronicle or RedStone USTB feed on Ethereum, or Chainlink USTB on another chain. Report next-valuation-date delivery and skipped values side by side.",
+      "issue": "The cross-oracle comparison has only 7 values from 12 days (blocks 26,417,731 to 26,503,879), but much more history is public. The study's own router check shows the Chronicle consumer has been the router target since block 22,926,115 (July 2025). A keyless Blockscout v2 read at block 23,500,000 returned Poked events from September 2025. The bounded four-page index walk set the sample size, not data availability. RESULTS correctly says the sample supports no ranking. A full-history comparison would support one, and it is the result an RWA risk team would cite.",
+      "fix": "Extend chronicle_check.py to page through the full consumer history from ROUTER_START to the pin. Pace the Blockscout v2 requests to stay under its 429 limit and keep the per-log RPC inclusion checks. Run the same next-value-change classification and unseen-value test as for Chainlink. Report both feeds side by side from July 2025 to November 24, 2026: on the next change date, late, unseen, unknown and median ET posting time. Update the chart or add a second panel only if it passes render --check.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "usefulness",
+      "issue": "The most decision-relevant fact for an integrator is not reported: reliability changed over time. From replay delivery statuses, labels before 2025 were 118 on the next change date, 3 late and 7 unseen, out of 128. Labels from January 2025 were 470 on the next change date, 1 late, 1 unseen and 1 unknown, out of 473. Prior art (NavBridge, which ships simulated oracle data) is named only under 'Research plan leads' in SOURCES. The README never says what this study adds beyond it.",
+      "fix": "Add a by-period row or table to RESULTS (Jun to Dec 2024 versus Jan 2025 to Nov 2026) computed in ustb_metrics.analyze, and test it. Add one README sentence that names NavBridge and the vendor's heartbeat parameter as the prior reference points, and states what this study adds: a measured delivery schedule on real data, a list of skipped values and an exact-match fidelity check.",
       "owner": "agent"
     },
     {
       "dimension": "evidence",
-      "issue": "The issuer's publication time is unknown, so date-to-chain time combines the valuation strike, issuer publication and oracle posting. The new forward-fill evidence suggests Superstate publishes on the next valuation morning. If so, the feed's roughly 09:10 ET posting may follow publication within minutes. This is optional and does not lower the score.",
-      "fix": "Decide whether to approve a single bounded polling window on one business morning (for example every 5 minutes, 06:00 to 10:00 ET) of the public financials endpoint. The window would record when official.nav_date advances, bracketing publication against that day's onchain round.",
+      "issue": "RESULTS says only that the cause of each of the 8 omissions is unknown. The reviewer checked all 920 stored rounds on both aggregators, including the 31 inactive ones, and none of them contains any of the 8 unseen values. That is a stronger and checkable statement: no round stored on either aggregator ever carried the values. Separately, Chronicle event completeness rests on a single third-party index (Blockscout). RPC checks confirm that each listed log was included in a block, but nothing confirms that no log was missed.",
+      "fix": "Add an 'unseen values absent from all stored rounds, active and inactive' field to the replay output and state it in RESULTS next to the eight dates. For Chronicle, cross-check completeness with chunked eth_getLogs over small block ranges that a free endpoint accepts, or with a second public index, and record the result in the capture receipt.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "post_kit",
+      "issue": "Draft 1 gives '588 of 593 matched changes' without the 8 values that never posted, so a reader takes 588/593 as the reliability rate. Its phrase 'on the next date Superstate's labelled NAV changed' is hard to parse at a glance. The standalone chart passes its automated checks: byte check, 18 words, all four mark counts. But its title 'Chainlink USTB' states no point. The lone 'Superstate' at bottom left reads as an orphan word rather than an axis label (issuer label date). 'Unseen' and 'Unknown' are hard to tell apart without the description.",
+      "fix": "Rewrite draft 1 to give the whole outcome in one claim, for example: 'Chainlink's Ethereum USTB feed posted 588 of 601 Superstate NAVs the next valuation morning. 8 never appeared, 7 of them in 2024.' Change the chart title to a claim of 20 words or fewer, for example '588 of 601 USTB NAVs reached Chainlink the next valuation day'. Relabel the axis 'Superstate label date' and the categories 'Never posted' and 'Too recent'. Rerun render --check and preflight, and update the SHA-256 values in post-review.json and HANDOFF. Design approval stays with Rahil.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "completeness",
+      "issue": "The brief asks to compare supported pairs. The Chainlink pair is delivered in full, but the Chronicle pair covers only 12 days of its roughly 16-month public history, so that pair is effectively a sample. All other parts of the brief are delivered: the six-product availability gate closed with a narrower finding, then the USTB follow-up covered weekends, holidays, month-end, heartbeat, deviation, the chart and independent review.",
+      "fix": "Same as the Chronicle full-history usefulness fix. Once it is done, the Chronicle pair counts as delivered.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "code",
+      "issue": "The tests are behavioural and cover replay tamper, live revision, switch exclusion, multicall failure, NYSE and value-change semantics, and the stale chart. Two gaps remain. Chronicle capture verification (rpc_log receipt or block mismatch, a log missing from the receipt, the page-limit overflow, unexpected router history, adapter end-state mismatch) has no test, though the Chronicle numbers depend on it. The 'after' and 'before' delivery statuses that analyze() computes are only fed to the chart test as synthetic input. No analyze() test asserts them.",
+      "fix": "Add tests that patch rpc_batch and read_source to return a mismatched block hash, a receipt without the log, five full index pages and a router switch from a nonzero address, and that assert each raises ValueError with its message. Add an analyze() case where a label posts one day after its successor and assert status 'after' with days_from_next_issuer_value_change == 1.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "documentation",
+      "issue": "The documents agree with the code and with each other on every number the reviewer checked. Some references are stale or missing. README and docs/README describe QUALITY.md as the 'Round 2' assessment, but it is now round 3. HANDOFF is titled 'Round 2 implementation handoff'. Prior art does not appear in the README. METHOD uses jq without listing it as an optional tool.",
+      "fix": "When the fixes above land, update the README and docs/README link text to 'current quality review', retitle HANDOFF for the round that implements the fixes, add the prior-art sentence and list jq as optional in 'Run it'.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "reproducibility",
+      "issue": "The digest is designed to survive issuer revisions, and a synthetic regression test covers this. The real test comes only after Superstate publishes the November 25 and later NAVs. At 05:05 UTC on November 27, official.nav_date was still 2026-11-24.",
+      "fix": "After 2026-11-30, run a fresh clone: python3 scripts/feed_history.py capture, then replay > data/ustb/results.json, then python3 scripts/render_chart.py data/ustb/results.json docs/ustb-gap.svg --check. Record the result in HANDOFF. This waits only on time and does not lower the score.",
+      "owner": "time"
+    },
+    {
+      "dimension": "evidence",
+      "issue": "Superstate's publication time is unknown. Date-to-chain hours therefore combine the valuation strike, issuer publication and oracle posting. The project states this limit. It is optional and does not lower the score.",
+      "fix": "Rahil decides whether to approve one bounded polling window on one business morning (for example every 5 minutes, 06:00 to 10:00 ET) of the public financials endpoint. The window would record when official.nav_date advances.",
       "owner": "rahil"
     }
   ],
   "rahil_decisions": [
-    "Design approval of the replacement chart and of the exact draft texts before any external use.",
+    "Design approval of the standalone chart and the exact draft texts before any external use.",
     "Whether and when to post the drafts.",
-    "Optional live EDGAR verification: supply genuine authorized organizational SEC_USER_AGENT locally and run python3 scripts/issuer_history.py --live --verify-indices. Offline replay and the pinned filing excerpts already cover the reported BENJI numbers.",
-    "Whether to approve one bounded polling window to observe Superstate's NAV publication time (optional)."
+    "Optional live EDGAR verification: set a genuine authorized organizational SEC_USER_AGENT locally and run python3 scripts/issuer_history.py --live --verify-indices. Offline replay and the pinned filing excerpts already cover the reported BENJI numbers.",
+    "Optional: approve one bounded polling window to observe when Superstate publishes its NAV."
   ],
   "history": [
     {
@@ -93,6 +93,13 @@
       "round": 2,
       "overall": 5,
       "head": "9752755de1d97de83ca42f0b1965e5be9aadd19f"
+    },
+    {
+      "round": 3,
+      "overall": 8,
+      "head": "75fe51c317caf3f9c73029339983f5a048b80213"
     }
-  ]
+  ],
+  "builder": "gpt-6.2-sol",
+  "independence_confirmed_by": "gpt-6.2-astra"
 }

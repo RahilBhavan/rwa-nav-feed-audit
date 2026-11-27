@@ -43,3 +43,7 @@ The November Ondo document table supported 14 OUSG return pairs, including an ou
 Round 2 scored 5/10 after independently reproducing the capture. Two Saturday observations exposed a difference between counting elapsed NYSE sessions and landing on the next session date. Use explicit posting-date equality and examine the issuer's observed NAV changes. Label that clock by what the API shows. Freeze the official reference date so subsequent updates to provisional labels cannot change the reported study.
 
 Use the captured November 24 official NAV date for the historical labels and the Ethereum pin for follow-up. The value from the last issuer label reached both feeds, with no finalized next change to compare against. Keep it visible as unknown. Use a short common November window for the second-feed comparison, where Chronicle's public consumer logs and Ethereum receipts support an exact-value join.
+
+## 2026-11-27 — Close the three-round quality loop
+
+Round 3 scored 8/10 on the published research commit 75fe51c. Scores rose from 3 to 5 to 8. The authorized round limit was reached. The final review and handoff commit changes documentation and records only. The dashboard compares exact commit hashes, so the scored research revision precedes this closeout.

@@ -39,3 +39,7 @@ git diff --check
 For the keyless provider limits and optional transports, see [replay and verification](docs/METHOD.md#replay-and-verification). Chart bytes, visible word count, mark counts, alt text, exact draft bodies and evidence anchors are checked by the suite. To inspect a phone render, use `rsvg-convert -w 390 -o card.png docs/ustb-gap.svg` with Archivo and IBM Plex Sans available to Fontconfig.
 
 The time-owned follow-up remains a clean-clone recapture, replay and SVG byte check after November 30 once Superstate finalizes later NAVs. Rahil retains review and posting approval, optional authentic EDGAR identification and any separate issuer publication observation.
+
+## Independent review status
+
+The full-history repair is published at c1916c2. Astra verified all 34 tests, the chart bytes, the feed counts and the Chronicle source agreement. Two attempts to start the fourth independent review returned a Claude API rate-limit error. No new verdict was produced. The last completed review scored the previous research revision 8/10.

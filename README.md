@@ -71,3 +71,7 @@ The comparison is retrospective. The issuer date supplies no publication clock. 
 Project code is [MIT-licensed](LICENSE). Third-party sources retain their own terms. The repository includes research results, selected factual observations and source receipts. Full downloaded inputs stay local.
 
 Part of [Rahil Bhavan's projects](https://github.com/RahilBhavan).
+
+## Roadmap
+
+Where this study goes next and what each step needs: [ROADMAP.md](ROADMAP.md).

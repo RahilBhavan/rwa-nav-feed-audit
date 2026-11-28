@@ -1,3 +1,61 @@
+# Quality review, round 4
+
+- Rubric version: 1
+- Reviewer: claude-opus-5-5. The builder was GPT-6.2 Sol, so the reviewer comes from a different model family. Fresh pass; every check was rerun.
+- Reviewed head: `4cd7c98ef18aa9ad44bcb25a89f7c7d61b581849`, clean tree, equal to `origin/main`. The research commit is `c1916c2`; `4cd7c98` changes only records.
+- Reviewed at: 2026-11-28T19:05:55Z
+- Scope: wrote only `QUALITY.json` and this file. Network reads were one block header and one `latestRoundData` at the pin through keyless RPC. I did not rerun the full Chainlink or Chronicle captures; I replayed the committed captures. Runs went through the workload gate.
+
+**Overall 8/10 (rounds: 3, 5, 8, 8).** The big round-three gaps are closed: the Chronicle comparison now covers the consumer's full history with a second log sweep, the by-period split is reported, and absence from all 920 stored rounds is checked. Code sets the score. The new Chronicle comparison code has untested rules, and one single-line mutant silently changes a published number. Two evidence points also need agent work: how the README frames Chronicle's 2025 "unseen" values, and the near-matches counted as unseen in 2026.
+
+| Dimension | R3 | R4 | One-line reason |
+| --- | ---: | ---: | --- |
+| Answer | 8 | 9 | H1 is the question and the first paragraph answers it (588 of 601, about 9:10 a.m., seven of eight unseen from 2024). The README's Chronicle line (337 vs 236; 1 vs 93 unseen) misleads without the 2025 caveat. |
+| Evidence | 9 | 9 | Absence from all 920 rounds and the second log sweep close round three. New: 82 of Chronicle's 93 unseen labels fall in a period when its consumer carried no USTB NAV, and three 2026 "unseen" values were followed by values within 0.08 bp. |
+| Reproducibility | 10 | 10 | 34/34 tests on 3.14 and 3.10; offline replays exit 0; Chronicle replay SHA-256 `2482b61c…` and SVG SHA-256 `29ad83e6…` match HANDOFF; the pinned block hash and `latestRoundData` answer 11,291,441 match live. |
+| Usefulness | 8 | 9 | Full-history Chronicle comparison, by-period reliability and named prior art. The like-for-like comparison window is not the one the README leads with. |
+| Completeness | 9 | 10 | Chronicle pair delivered over its full public history. The post-November-30 issuer recheck waits on time. |
+| Documentation | 9 | 9 | jq, current-review links and HANDOFF title fixed. STATE and HANDOFF credit "Astra" without explanation and open with the round-four retry. |
+| Post kit | 8 | 9 | Draft 1 gives the full outcome; chart labels fixed. The chart title is still "Chainlink USTB". |
+| Code | 9 | 8 | Capture failure paths and after/before statuses are now tested. 7 of my 12 mutants survive; one changes the published "655 of 877" count with no failing test. |
+| **Overall (lowest)** | **8** | **8** | |
+
+## What the reviewer ran
+
+| Check | Result |
+| --- | --- |
+| `python3 -m unittest discover -s tests` (3.14.8, 3.10) | 34/34 OK on both |
+| `issuer_history.py`, `feed_history.py replay`, `render_chart.py … --check`, `chronicle_check.py replay`, `report_checks.py replay` | All exit 0. Chainlink 588 / 4 / 8 / 1; unseen absent from all stored rounds = 8; 920 rounds all matching. Chronicle 337 / 236 on date, 1 / 93 unseen, medians 33,047 s (09:10:47) and 41,549 s (11:32:29), 81 earlier, 165 later, median difference 8,586 s, 655 of 877 exact events. |
+| Digests | Chronicle replay `2482b61ca285…` and SVG `29ad83e6124f…` match HANDOFF; events `ordered_log_sha256` `25b4e94eb3dd…` matches the committed receipt (358 ranges). |
+| Live keyless reads at block 26,503,879 | Block hash `0x4763fd00…6249f` matches; proxy `latestRoundData` answer 11,291,441 = the November 24 NAV $11.291441. |
+| Chronicle unseen check (my script over `data/chronicle/events.json`) | Before November 11, 2025: 216 writes, all two-decimal, ranging $6.16–$11.73; only 12 equal a recent label rounded to cents. 2026: eight unseen labels have an adjacent-day value (about ±1 bp); three were followed by near values: Oct 16 (+0.005 bp), Oct 30 (−0.076 bp), Nov 4 (+0.028 bp). |
+
+## Mutation probe (12 single-line mutants, reverted)
+
+Killed (5): after/before swapped, period split moved by a day, left-censoring disabled, NYSE session count from the label day, `changed` true for the first round.
+Survived (7). Of these, one changes published output: dropping the 10¹² scale on issuer values changes `exact_matching_events` (RESULTS: 655 of 877). Six leave both replay outputs byte-identical (untested rules): unseen cutoff `<`→`<=`, spell start after a label gap, repeat-value ambiguity `>1`→`>2`, earlier-than-label ambiguity boundary, ties counted as earlier, and the complete-label guard on `next_changes`.
+
+## Round-3 gaps
+
+| Gap | Status |
+| --- | --- |
+| Answer: plain first line | Closed |
+| Usefulness: 12-day Chronicle sample | Closed |
+| Usefulness: by-period, prior art | Closed |
+| Evidence: absence from all rounds; Chronicle completeness | Closed |
+| Post kit: draft 1, chart labels and title | Partly (title unchanged) |
+| Completeness: Chronicle pair | Closed |
+| Code: Chronicle failure paths; after status | Closed (new survivors) |
+| Documentation: stale labels, jq | Closed |
+| Reproducibility: post-revision recapture | Open (time) |
+| Evidence: publication-time polling | Open (Rahil, optional) |
+
+## Remaining gaps
+
+Agent: (1) test `exact_matching_events` and the six untested rules; (2) lead the README comparison with the like-for-like 2026 window and state that the 2025 consumer writes were not NAV values; (3) separate near values from skipped labels in the Chronicle unseen count; (4) make the chart title a claim; (5) update STATE/HANDOFF and explain or drop "Astra". Time: recapture after November 30. Rahil: chart and draft approval, posting, optional EDGAR identity and polling window. Details in `QUALITY.json`.
+
+---
+
 # Quality review, round 3
 
 This is an independent review under rubric v1 of commit `75fe51c317caf3f9c73029339983f5a048b80213`, carried out on 2026-11-27 UTC. The reviewer wrote none of the reviewed code or documents. The commit history does not record which model built the project. The dashboard owner should confirm that the builder came from a different model family, as the rubric requires. Scores and gaps are also recorded in [`QUALITY.json`](../QUALITY.json).

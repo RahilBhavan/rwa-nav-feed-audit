@@ -1,49 +1,43 @@
 {
   "rubric_version": 1,
-  "round": 4,
+  "round": 5,
   "reviewer": "claude-opus-5-5",
-  "reviewed_head": "4cd7c98ef18aa9ad44bcb25a89f7c7d61b581849",
-  "reviewed_at": "2026-11-28T19:05:55Z",
+  "reviewed_head": "fee39ee118be95fb7673f3650568bc28ac821c41",
+  "reviewed_at": "2026-11-28T20:02:41Z",
   "scores": {
-    "answer": 9,
+    "answer": 10,
     "evidence": 9,
     "reproducibility": 10,
     "usefulness": 9,
     "completeness": 10,
     "documentation": 9,
-    "post_kit": 9,
+    "post_kit": 10,
     "code": 8
   },
   "overall": 8,
   "gaps": [
     {
       "dimension": "code",
-      "issue": "I ran 12 single-line mutants of ustb_metrics.py and chronicle_check.py; 7 survived the 34-test suite. One changes a published number: dropping the 10^12 scale in issuer_values (chronicle_check.py) changes the '655 of 877 events matched a finalized issuer value exactly' figure in RESULTS, and no test asserts exact_matching_events or first_exact_event. The other six leave both replay outputs byte-identical, so they are untested rules rather than wrong numbers: the unseen cutoff (successor < through_et vs <=), a new spell after a missing label day, the Chronicle repeated-value ambiguity threshold (> 1 vs > 2), the earlier-than-label ambiguity boundary, ties counted as Chronicle-earlier (< 0 vs <= 0), and the next_changes complete-label guard.",
-      "fix": "In tests/test_feed_history.py assert exact_matching_events == 655, events == 877 and the first exact event block 23,775,027 from the committed Chronicle receipt fixture (or a synthetic stream with a known count). Add one synthetic case per untested rule: successor equal to the cutoff date, a one-day label gap with an equal value on both sides, a value repeated twice in the issuer series, a Chronicle post one day before its label, a zero paired difference, and a missing label between a start and its successor.",
+      "issue": "I ran 17 fresh single-line mutants (14 new, 3 round-4 repeats); 7 killed, 10 survived. Two survivors change numbers printed in RESULTS with every test green: interval_over_heartbeat '>' to '>=' (ustb_metrics.py) moves the RESULTS heartbeat row from 283/132 to 291/137, and friday_to_monday '+ 3*DAY' to '+ 2*DAY' moves the '51 Monday posts out of 58 Friday-labelled changes' figure to 0 (full history 105 to 0). A third changes printed replay output: paired_without_successor=len(paired) gives 247 instead of 1. weekday_steps '< 5' to '<= 5' rewrites the weekday-step distribution (274 to 223 one-step rounds). The chart highlight-width mutant survives the suite and is caught only by the README's render --check. Five more (post_activation '>=' , pre_activation '<=', near_value also for unknown, min vs max activation day, right_censored '>') are equivalent on the pinned data, so they are untested rules rather than wrong numbers.",
+      "fix": "In tests/test_feed_history.py add analyze() fixtures that place one interval exactly at the heartbeat (95,400 s) and one Friday label posted the following Monday versus Sunday, and assert interval_over_heartbeat and friday_to_monday. Assert paired_without_successor == 1 in the published-count test and in the synthetic compare fixture, and assert a weekday_steps value across a weekend. Make the existing ChartTest regenerate the SVG from a small report and compare bytes to the committed file, or call render_chart's --check path, so the chart cannot drift under the suite.",
+      "owner": "agent"
+    },
+    {
+      "dimension": "code",
+      "issue": "The test that pins the published counts (877/655, 337/236, 222/205, 0/11, the three near values) is skipped in a clean clone because data/ is git-ignored, so a fresh clone or CI runs 38 tests and none of them asserts a published number against real data. Locally, with captures present, it runs and passes.",
+      "fix": "Commit a small derived fixture (for example the 340 shared delivery rows and the 877 normalized events, which are already summarized by hash in tests/evidence) or a compact expected-counts JSON keyed to the capture digests, and point the test at it so it runs without the full ignored captures. Otherwise state in README 'Run it' that the published-count test needs the capture commands first.",
       "owner": "agent"
     },
     {
       "dimension": "evidence",
-      "issue": "The README Results line says Chainlink posted 337 of 340 shared values on date and Chronicle 236, with 1 vs 93 'exact values unseen'. 82 of the 93 are 2025 labels, from a period when Chronicle's consumer carried no exact USTB NAV at all: its 216 writes before November 11, 2025 are two-decimal values that jump between $6.16 and $11.73 and do not track the NAV (my check: only 12 equal a recent label rounded to cents). RESULTS states the facts, but the README comparison invites reading 93 as delivery failures by a NAV feed.",
-      "fix": "In the README lead the comparison with the like-for-like window from Chronicle's first exact match: 2026 labels, 222 vs 205 on date, 0 vs 11 unseen. Then add one sentence: Chronicle's consumer wrote non-NAV two-decimal values before November 11, 2025, so the 2025 labels measure when it started carrying the NAV, not missed deliveries.",
-      "owner": "agent"
-    },
-    {
-      "dimension": "evidence",
-      "issue": "The 11 Chronicle 'unseen' values in 2026 mix two kinds. Eight have an adjacent-day value posted (about plus or minus 1 bp, one day's accrual), which fits a skipped label. Three were followed by a near-identical value instead: Oct 16, 2026 (Chronicle 11.247684 vs issuer 11.247678, 0.005 bp), Oct 30 (11.263072 vs 11.263157, -0.076 bp) and Nov 4 (11.268726 vs 11.268694, +0.028 bp). Those look like a precision or revision difference, not a missed delivery, and the exact-match rule counts them as unseen.",
-      "fix": "Add a 'near value posted within 0.1 bp before the next label' category to the Chronicle replay output and RESULTS table, list the three dates with both values, and keep exact match as the primary rule.",
-      "owner": "agent"
-    },
-    {
-      "dimension": "post_kit",
-      "issue": "The standalone chart's title is still 'Chainlink USTB', which states no point; the round-three fix was applied to the axis and category labels but not the title. The drafts are text-only, so this affects only the chart.",
-      "fix": "Title it with the claim, e.g. '588 of 601 USTB NAVs reached Chainlink the next NAV day' (20 words or fewer), rerun render --check and update the hashes in post-review.json and HANDOFF.",
+      "issue": "RESULTS says the eight 2026 unseen values without a near value have 'the nearest write in or just after their window 0.94 to 1.01 bp away'. No command prints that range. My check against data/chronicle/events.json: for Feb 2 the nearest write inside the label-to-successor window is -2.84 bp (the consumer held 10.975524 on Feb 2 and Feb 3) and the 0.97 bp write is on Feb 4, after the window; for Feb 17 there is no write inside the window and the nearest is +0.94 bp on Feb 19. The range is defensible only with a looser, unstated window.",
+      "fix": "Add the nearest write (value, ET time, bp difference, inside/after window) for each unseen row to the Chronicle replay output and quote it, or reword RESULTS to the measured statement (for example: 'none has a write within 0.1 bp; six have a write about one day of accrual (0.94-1.01 bp) away inside the window, and Feb 2 and Feb 17 only after it').",
       "owner": "agent"
     },
     {
       "dimension": "documentation",
-      "issue": "STATE.md and HANDOFF.md say 'Astra reran 34 tests' and 'Astra verified' without saying who or what Astra is, and both open with the round-four retry, which this record supersedes.",
-      "fix": "Replace the name with a role ('the verifying agent') or define it once in DECISIONS, and record round four (8/10 at 4cd7c98) with the gaps above as the next action.",
+      "issue": "ROADMAP.md 'Current state' says round-four gaps are open (7 of 12 mutants surviving, Chronicle unseen categories mixed, chart title states no point) and feature 1 proposes fixing them, but the repair commit before it had already closed them. README and docs/README link text still call QUALITY.md the round-four review.",
+      "fix": "Rewrite ROADMAP 'Current state' and drop or re-scope feature 1 to the round-five code gaps; update the README and docs/README link text to the round-five review.",
       "owner": "agent"
     },
     {
@@ -65,51 +59,36 @@
     "Optional live EDGAR verification with a genuine organizational SEC_USER_AGENT (python3 scripts/issuer_history.py --live --verify-indices).",
     "Optional: approve one bounded polling window to observe when Superstate publishes its NAV."
   ],
-  "round_3_gap_status": [
+  "round_4_gap_status": [
     {
-      "dimension": "answer",
+      "dimension": "code",
       "status": "closed",
-      "note": "H1 is the question, the first paragraph gives the plain answer with 9:10 a.m. and the 2024 split. 'Next date Superstate's labelled NAV changed' remains as the defined proxy."
-    },
-    {
-      "dimension": "usefulness",
-      "status": "closed",
-      "note": "Chronicle comparison now covers the full consumer history (877 events, block 22,926,094 to 26,503,879) over 340 shared labels."
-    },
-    {
-      "dimension": "usefulness",
-      "status": "closed",
-      "note": "By-period table in RESULTS and tested; README names NavBridge and the heartbeat and states the contribution."
+      "note": "Synthetic compare() fixtures now pin exact_matching_events, first_exact_event, ties, both ambiguity rules, the unseen cutoff and label-gap spells. I re-ran three round-4 survivors (10^12 scale, ties as count(1), repeat threshold >2) in a clean clone: all killed. New survivors elsewhere (new gap)."
     },
     {
       "dimension": "evidence",
       "status": "closed",
-      "note": "Unseen values checked against all 920 stored rounds (field in replay); Chronicle completeness cross-checked with a second eth_getLogs sweep over 358 ranges, same ordered-log digest."
+      "note": "README Results now leads with 2026 (224 labels, 222 vs 205, 0 vs 11 unseen) and explains the pre-Nov-11-2025 non-NAV writes (216, $6.16-$11.73, 171 two-decimal, none equal a label). I reproduced all of these independently."
+    },
+    {
+      "dimension": "evidence",
+      "status": "closed",
+      "note": "near_value category in the replay, RESULTS table of the three dates (+0.005, -0.075, +0.028 bp), tested at the 0.1 bp and date boundaries; my three boundary mutants were killed."
     },
     {
       "dimension": "post_kit",
-      "status": "partly",
-      "note": "Draft 1 gives the full outcome; axis and categories relabelled. Chart title still states no point (new gap)."
-    },
-    {
-      "dimension": "completeness",
       "status": "closed",
-      "note": "Chronicle pair delivered over its full public history."
-    },
-    {
-      "dimension": "code",
-      "status": "closed",
-      "note": "Capture failure paths and the after/before statuses are tested (my after/before swap mutant was killed). New Chronicle code has untested rules (new gap)."
+      "note": "Chart title is the claim '588 of 601 USTB NAVs reached Chainlink the next NAV day'; render --check reproduces SVG a4a9248a...; a test pins title and first two text lines."
     },
     {
       "dimension": "documentation",
       "status": "closed",
-      "note": "Current-review link text, HANDOFF title, prior art and optional jq fixed."
+      "note": "No 'Astra' left in STATE/HANDOFF/README; STATE and HANDOFF record round four and the round-five next action. ROADMAP added afterwards is stale (new gap)."
     },
     {
       "dimension": "reproducibility",
       "status": "open (time)",
-      "note": "Waits for post-Nov-30 issuer values."
+      "note": "Post-Nov-30 clean-clone recapture still waits on later issuer values."
     },
     {
       "dimension": "evidence",
@@ -117,6 +96,65 @@
       "note": "Optional publication-time polling window."
     }
   ],
+  "round_4": {
+    "reviewed_head": "4cd7c98ef18aa9ad44bcb25a89f7c7d61b581849",
+    "reviewed_at": "2026-11-28T19:05:55Z",
+    "scores": {
+      "answer": 9,
+      "evidence": 9,
+      "reproducibility": 10,
+      "usefulness": 9,
+      "completeness": 10,
+      "documentation": 9,
+      "post_kit": 9,
+      "code": 8
+    },
+    "overall": 8,
+    "gaps": [
+      {
+        "dimension": "code",
+        "issue": "I ran 12 single-line mutants of ustb_metrics.py and chronicle_check.py; 7 survived the 34-test suite. One changes a published number: dropping the 10^12 scale in issuer_values (chronicle_check.py) changes the '655 of 877 events matched a finalized issuer value exactly' figure in RESULTS, and no test asserts exact_matching_events or first_exact_event. The other six leave both replay outputs byte-identical, so they are untested rules rather than wrong numbers: the unseen cutoff (successor < through_et vs <=), a new spell after a missing label day, the Chronicle repeated-value ambiguity threshold (> 1 vs > 2), the earlier-than-label ambiguity boundary, ties counted as Chronicle-earlier (< 0 vs <= 0), and the next_changes complete-label guard.",
+        "fix": "In tests/test_feed_history.py assert exact_matching_events == 655, events == 877 and the first exact event block 23,775,027 from the committed Chronicle receipt fixture (or a synthetic stream with a known count). Add one synthetic case per untested rule: successor equal to the cutoff date, a one-day label gap with an equal value on both sides, a value repeated twice in the issuer series, a Chronicle post one day before its label, a zero paired difference, and a missing label between a start and its successor.",
+        "owner": "agent"
+      },
+      {
+        "dimension": "evidence",
+        "issue": "The README Results line says Chainlink posted 337 of 340 shared values on date and Chronicle 236, with 1 vs 93 'exact values unseen'. 82 of the 93 are 2025 labels, from a period when Chronicle's consumer carried no exact USTB NAV at all: its 216 writes before November 11, 2025 are two-decimal values that jump between $6.16 and $11.73 and do not track the NAV (my check: only 12 equal a recent label rounded to cents). RESULTS states the facts, but the README comparison invites reading 93 as delivery failures by a NAV feed.",
+        "fix": "In the README lead the comparison with the like-for-like window from Chronicle's first exact match: 2026 labels, 222 vs 205 on date, 0 vs 11 unseen. Then add one sentence: Chronicle's consumer wrote non-NAV two-decimal values before November 11, 2025, so the 2025 labels measure when it started carrying the NAV, not missed deliveries.",
+        "owner": "agent"
+      },
+      {
+        "dimension": "evidence",
+        "issue": "The 11 Chronicle 'unseen' values in 2026 mix two kinds. Eight have an adjacent-day value posted (about plus or minus 1 bp, one day's accrual), which fits a skipped label. Three were followed by a near-identical value instead: Oct 16, 2026 (Chronicle 11.247684 vs issuer 11.247678, 0.005 bp), Oct 30 (11.263072 vs 11.263157, -0.076 bp) and Nov 4 (11.268726 vs 11.268694, +0.028 bp). Those look like a precision or revision difference, not a missed delivery, and the exact-match rule counts them as unseen.",
+        "fix": "Add a 'near value posted within 0.1 bp before the next label' category to the Chronicle replay output and RESULTS table, list the three dates with both values, and keep exact match as the primary rule.",
+        "owner": "agent"
+      },
+      {
+        "dimension": "post_kit",
+        "issue": "The standalone chart's title is still 'Chainlink USTB', which states no point; the round-three fix was applied to the axis and category labels but not the title. The drafts are text-only, so this affects only the chart.",
+        "fix": "Title it with the claim, e.g. '588 of 601 USTB NAVs reached Chainlink the next NAV day' (20 words or fewer), rerun render --check and update the hashes in post-review.json and HANDOFF.",
+        "owner": "agent"
+      },
+      {
+        "dimension": "documentation",
+        "issue": "STATE.md and HANDOFF.md say 'Astra reran 34 tests' and 'Astra verified' without saying who or what Astra is, and both open with the round-four retry, which this record supersedes.",
+        "fix": "Replace the name with a role ('the verifying agent') or define it once in DECISIONS, and record round four (8/10 at 4cd7c98) with the gaps above as the next action.",
+        "owner": "agent"
+      },
+      {
+        "dimension": "reproducibility",
+        "issue": "The digest is designed to survive issuer revisions and a synthetic test covers it, but the real check waits until Superstate publishes later NAVs.",
+        "fix": "After 2026-11-30, in a fresh clone: python3 scripts/feed_history.py capture, replay > data/ustb/results.json, then python3 scripts/render_chart.py data/ustb/results.json docs/ustb-gap.svg --check. Record the result in HANDOFF.",
+        "owner": "time"
+      },
+      {
+        "dimension": "evidence",
+        "issue": "Superstate's publication time is unknown, so date-to-chain hours combine valuation strike, issuer publication and oracle posting. Stated as a limit; optional.",
+        "fix": "Rahil decides whether to approve one bounded polling window of the public financials endpoint on one business morning.",
+        "owner": "rahil"
+      }
+    ]
+  },
   "round_3": {
     "reviewed_head": "75fe51c317caf3f9c73029339983f5a048b80213",
     "reviewed_at": "2026-11-27T05:09:47Z",
@@ -216,6 +254,11 @@
       "round": 4,
       "overall": 8,
       "head": "4cd7c98ef18aa9ad44bcb25a89f7c7d61b581849"
+    },
+    {
+      "round": 5,
+      "overall": 8,
+      "head": "fee39ee118be95fb7673f3650568bc28ac821c41"
     }
   ]
 }

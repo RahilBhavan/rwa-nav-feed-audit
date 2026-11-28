@@ -19,7 +19,7 @@ import feed_history as feed
 import chronicle_check as chronicle
 import render_chart as chart
 from report_checks import account_fields, compare_account, statement_links
-from ustb_metrics import analyze, days
+from ustb_metrics import analyze, days, delivery_status
 
 
 def round_row(phase, number, answer, timestamp, started=None):
@@ -254,6 +254,32 @@ class FeedTest(unittest.TestCase):
                 self.assertIn(msg, stderr.write.call_args.args[0])
 
 
+    def test_unseen_needs_follow_up_strictly_after_the_successor_date(self):
+        through = date(2026, 11, 26)
+        for successor, expected in [(date(2026, 11, 25), "unseen"), (through, "unknown"),
+                                    (None, "unknown")]:
+            with self.subTest(successor=successor):
+                self.assertEqual(delivery_status(None, successor, through, observed_value=False,
+                                                 changed=False), expected)
+        self.assertEqual(delivery_status(None, date(2026, 11, 25), through, observed_value=True,
+                                         changed=False), "unknown")
+
+    def test_label_gap_starts_a_new_spell_and_blocks_the_successor(self):
+        first, gap, resumed, last = list(days(date(2026, 1, 5), date(2026, 1, 8)))
+        labels = {first: 100, resumed: 100, last: 101}  # no label for the gap day
+        rounds = [round_row(2, 1, 100, time_utc("2026-01-08T14:00:00")),
+                  round_row(2, 2, 101, time_utc("2026-01-09T14:00:00"))]
+        out = analyze(rounds, labels, first, last, 95_400,
+                      observed_through=time_utc("2026-01-10T00:00:00"))
+        repeated = out["rounds"][0]
+        self.assertEqual(repeated["candidate_label_starts"], [first, resumed])
+        self.assertIsNone(repeated["label"])
+        by_label = {row["label"]: row for row in out["delivery"]}
+        self.assertEqual(list(by_label), [first, resumed, last])
+        self.assertIsNone(by_label[first]["next_issuer_value_change_date"])
+        self.assertEqual(by_label[resumed]["next_issuer_value_change_date"], last)
+
+
 class ChronicleTest(unittest.TestCase):
     def test_join_uses_exact_changed_values_and_separates_censoring_from_absence(self):
         scale = 10**12
@@ -296,6 +322,114 @@ class ChronicleTest(unittest.TestCase):
         self.assertTrue(tail["chronicle"]["right_censored"])
         self.assertEqual(tail["chronicle"]["status"], "unknown")
         self.assertEqual(report["feeds"]["chainlink"]["paired_finalized_et_seconds"]["p50"], 32700)
+
+    def compare_fixture(self, events, rows, last="2026-11-24"):
+        scale = 10**12
+        activation = chronicle.ROUTER_START
+        pin = time_utc("2026-11-27T03:33:11")
+        evidence = dict(block=feed.BLOCK, block_hash=feed.BLOCK_HASH, decimals=18, timestamp=pin,
+                        router_activation=dict(block=activation, timestamp=time_utc("2026-11-15T17:00:00")),
+                        events=[dict(block=activation + i, value=value, timestamp=time_utc(at))
+                                for i, (value, at) in enumerate(events, 1)])
+        issuer = [dict(label=label, answer=answer, first_post_et=post, status="unseen" if post is None else "x",
+                       next_issuer_value_change_date=successor)
+                  for label, answer, post, successor in rows]
+        chainlink = dict(block=dict(block=feed.BLOCK, block_hash=feed.BLOCK_HASH, block_timestamp=pin),
+                         issuer_labels=dict(last=last), full=dict(delivery=issuer))
+        return scale, chronicle.compare(evidence, chainlink)
+
+    def test_exact_events_pair_ties_and_ambiguity_rules(self):
+        scale = 10**12
+        report_scale, report = self.compare_fixture(
+            [(100 * scale, "2026-11-17T14:00:00"),      # 09:00 ET, same instant as Chainlink: a tie
+             (101 * scale, "2026-11-18T15:00:00"),      # 10:00 ET, later than Chainlink
+             (102 * scale, "2026-11-19T13:00:00"),      # 08:00 ET, earlier than Chainlink
+             (103 * scale, "2026-11-17T15:00:00"),      # posted two days before its label
+             (104 * scale, "2026-11-20T15:00:00"),      # posted on its own label date
+             (105 * scale, "2026-11-23T15:00:00"),      # value repeated in the issuer series
+             (777 * scale, "2026-11-24T15:00:00")],     # matches no issuer value
+            [("2026-11-16", 100, "2026-11-17T09:00:00-05:00", "2026-11-17"),
+             ("2026-11-17", 101, "2026-11-18T09:00:00-05:00", "2026-11-18"),
+             ("2026-11-18", 102, "2026-11-19T09:00:00-05:00", "2026-11-19"),
+             ("2026-11-19", 103, None, "2026-11-20"),
+             ("2026-11-20", 104, None, "2026-11-21"),
+             ("2026-11-21", 105, None, "2026-11-22"),
+             ("2026-11-22", 105, None, "2026-11-23")])
+        tie, later, earlier, day_before, same_day, repeat_one, repeat_two = report["rows"]
+        self.assertEqual((report["events"], report["exact_matching_events"]), (7, 6))
+        self.assertEqual(report["first_exact_event"]["value"], 100 * report_scale)
+        self.assertEqual((report["chronicle_earlier"], report["chronicle_later"], report["ties"]), (1, 1, 1))
+        self.assertEqual(report["paired_finalized_seconds"]["n"], 3)
+        self.assertEqual(report["paired_finalized_seconds"]["p50"], 0)
+        self.assertEqual([r["chronicle_minus_chainlink_seconds"] for r in (tie, later, earlier)],
+                         [0, 3600, -3600])
+        self.assertTrue(day_before["chronicle"]["ambiguous"])
+        self.assertEqual(day_before["chronicle"]["status"], "unknown")
+        self.assertFalse(same_day["chronicle"]["ambiguous"])
+        self.assertEqual(same_day["chronicle"]["status"], "before")
+        for row in (repeat_one, repeat_two):
+            self.assertTrue(row["chronicle"]["ambiguous"])
+            self.assertIsNone(row["chronicle"]["first_post_et"])
+            self.assertEqual(row["chronicle"]["status"], "unknown")
+
+    def test_unseen_stops_at_the_pin_date_and_near_values_are_a_separate_count(self):
+        scale = 10**12
+        value = 11_000_000
+
+        def plus(answer, extra_bp_units=0, nudge=0):
+            raw = answer * scale
+            return raw + raw * extra_bp_units // 10**5 + nudge   # one unit is 0.1 bp
+        _, report = self.compare_fixture(
+            [(plus(value, 1), "2026-11-18T15:00:00"),          # exactly +0.1 bp on the successor date
+             (plus(value + 2, 1, 1), "2026-11-20T15:00:00"),   # just beyond 0.1 bp
+             (plus(value + 3, 0, 1), "2026-11-23T15:00:00"),  # near, but after the successor date
+             (plus(value + 6, 0, 1), "2026-11-24T15:00:00")],  # near, on its own label date
+            [("2026-11-17", value, None, "2026-11-18"),
+             ("2026-11-19", value + 2, None, "2026-11-20"),
+             ("2026-11-21", value + 3, None, "2026-11-22"),
+             ("2026-11-24", value + 6, None, "2026-11-25"),
+             ("2026-11-25", value + 7, None, "2026-11-26"),     # successor on the pin's ET date
+             ("2026-11-22", value + 8, None, None)])
+        self.assertEqual([r["chronicle"]["status"] for r in report["rows"]],
+                         ["unseen"] * 4 + ["unknown"] * 2)
+        near = [r["label"].isoformat() for r in report["rows"] if r["chronicle"]["near_value"]]
+        self.assertEqual(near, ["2026-11-17", "2026-11-24"])
+        found = report["chronicle_unseen_near_values"]
+        self.assertEqual([(n["label"].isoformat(), n["difference_bp"]) for n in found],
+                         [("2026-11-17", "0.100"), ("2026-11-24", "0.000")])
+        self.assertEqual(report["by_period_unseen_without_near_value"], {2026: 2})
+        self.assertEqual(report["by_period"][0]["chronicle_unseen_with_near_value"], 2)
+        self.assertEqual(report["feeds"]["chronicle"]["counts"]["unseen"], 4)
+
+    @unittest.skipUnless((ROOT / "data/chronicle/events.json").is_file()
+                         and (ROOT / "data/ustb/receipts.json").is_file(),
+                         "pinned captures are not present; run the capture commands")
+    def test_published_counts_replay_exactly_from_the_pinned_captures(self):
+        ref = json.loads((ROOT / "tests/evidence/chronicle-capture.json").read_bytes())
+        ustb = json.loads((ROOT / "tests/evidence/ustb-capture.json").read_bytes())
+        evidence = chronicle.replay_events(ROOT / "data/chronicle", ref)
+        report = json.loads(feed.json_bytes(feed.replay(ROOT / "data/ustb", ustb)))
+        self.assertEqual(report["full"]["summary"]["delivery_statuses"],
+                         dict(after=4, next_change=588, unknown=1, unseen=8))
+        out = chronicle.compare(evidence, report)
+        self.assertEqual((out["events"], out["exact_matching_events"]), (877, 655))
+        self.assertEqual(out["first_exact_event"]["block"], 23_775_027)
+        self.assertEqual(out["first_exact_event"]["value"], 10_888_154 * 10**12)
+        self.assertEqual((out["labels"], out["first"].isoformat(), out["last"]), (340, "2025-07-16", "2026-11-24"))
+        self.assertEqual(out["feeds"]["chainlink"]["counts"],
+                         dict(next_change=337, before=0, after=1, unseen=1, unknown=1))
+        self.assertEqual(out["feeds"]["chronicle"]["counts"],
+                         dict(next_change=236, before=3, after=7, unseen=93, unknown=1))
+        self.assertEqual((out["chronicle_earlier"], out["chronicle_later"], out["ties"]), (81, 165, 0))
+        by_year = {p["year"]: p for p in out["by_period"]}
+        self.assertEqual((by_year[2025]["labels"], by_year[2025]["chronicle"]["next_change"],
+                          by_year[2025]["chronicle"]["unseen"]), (116, 31, 82))
+        self.assertEqual((by_year[2026]["labels"], by_year[2026]["chainlink"]["next_change"],
+                          by_year[2026]["chronicle"]["next_change"], by_year[2026]["chainlink"]["unseen"],
+                          by_year[2026]["chronicle"]["unseen"]), (224, 222, 205, 0, 11))
+        self.assertEqual(out["by_period_unseen_without_near_value"], {2025: 82, 2026: 8})
+        self.assertEqual([(n["label"].isoformat(), n["difference_bp"]) for n in out["chronicle_unseen_near_values"]],
+                         [("2026-10-16", "0.005"), ("2026-10-30", "-0.075"), ("2026-11-04", "0.028")])
 
     def test_pagination_traverses_past_five_full_pages_and_keeps_boundary(self):
         block = feed.BLOCK
@@ -417,6 +551,9 @@ class ChartTest(unittest.TestCase):
         self.assertLessEqual(card["visible_words"], 20)
         self.assertEqual({g.get("id"): len(g) for g in tree.findall(".//s:g[@id]", ns)}, card["mark_counts"])
         self.assertEqual(tree.find("s:desc", ns).text, card["alt_text"])
+        self.assertEqual(tree.find("s:title", ns).text, card["title"])
+        self.assertEqual(card["title"], "588 of 601 USTB NAVs reached Chainlink the next NAV day")
+        self.assertEqual(" ".join(t.text for t in tree.findall(".//s:text", ns)[:2]), card["title"])
 
         copy = (ROOT / "posts" / receipt["copy_file"]).read_bytes()
         self.assertEqual(feed.sha(copy), receipt["copy_file_sha256"])

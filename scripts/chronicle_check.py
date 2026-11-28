@@ -4,6 +4,7 @@ import json
 import time
 from collections import Counter
 from datetime import date, datetime
+from decimal import Decimal
 from http.client import HTTPException
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -24,6 +25,9 @@ POKED = "0x9f8b8154174dc4a9ed8bbe5a985ecf6d8b2db481a1c64a02c8d94ae7929e0ba6"
 SWITCH = "0xfc802c9c0959bd0fa05d6d93d4b62c7c5df5b0d1b5dc34c51ed73cde3e5b7b94"
 INDEX = "https://eth.blockscout.com/api/v2/addresses"
 LOG_RPC = "https://rpc.mevblocker.io"
+# Exact match stays the primary rule. A separate near-value category records an
+# unseen value followed by a write this close to it on or before its successor date.
+NEAR_VALUE_BP = Decimal("0.1")
 
 
 def index_read(url):
@@ -247,6 +251,18 @@ def capture(destination, rpc, log_rpc, span, batch_size, receipt_rpc, receipt_ba
     save(destination / "receipts.json", json_bytes(receipts))
 
 
+def near_value(events, raw, label, successor):
+    """First write within NEAR_VALUE_BP of an unseen issuer value, from its label date to its successor date."""
+    if successor is None:
+        return None
+    for event in events:
+        posted = utc(event["timestamp"]).astimezone(ET)
+        difference = (event["value"] - raw) * 10_000 / Decimal(raw)
+        if label <= posted.date() <= successor and abs(difference) <= NEAR_VALUE_BP:
+            return dict(first_post_et=posted, value=event["value"], difference_bp=f"{difference:.3f}")
+    return None
+
+
 def compare(evidence, chainlink):
     check(evidence["block"] == chainlink["block"]["block"] == BLOCK
           and evidence["block_hash"] == chainlink["block"]["block_hash"] == BLOCK_HASH
@@ -277,6 +293,7 @@ def compare(evidence, chainlink):
         observed.add(baseline)
 
     rows = []
+    post_activation = [e for e in evidence["events"] if e["block"] > activation["block"]]
     delivery = chainlink["full"]["delivery"]
     occurrence_counts = Counter(row["answer"] for row in delivery)
     for row in delivery:
@@ -295,6 +312,7 @@ def compare(evidence, chainlink):
             post = None
         status = delivery_status(post, successor, through_et, observed_value=raw in observed,
                                  changed=post is not None)
+        near = near_value(post_activation, raw, label, successor) if status == "unseen" else None
         paired = post is not None and link_post is not None
         rows.append(dict(
             label=label, answer=row["answer"], next_issuer_value_change_date=successor,
@@ -302,7 +320,7 @@ def compare(evidence, chainlink):
                            right_censored=successor is None or (link_post is None and successor >= through_et)),
             chronicle=dict(first_post_et=post, status=status, left_censored=left_censored,
                            right_censored=successor is None or (post is None and successor >= through_et),
-                           ambiguous=bool(ambiguous)),
+                           ambiguous=bool(ambiguous), near_value=near),
             chronicle_minus_chainlink_seconds=int(post.timestamp()-link_post.timestamp()) if paired else None,
         ))
     check(bool(rows), "missing shared issuer labels")
@@ -320,6 +338,7 @@ def compare(evidence, chainlink):
     for year in sorted({r["label"].year for r in rows}):
         group = [r for r in rows if r["label"].year == year]
         periods.append(dict(year=year, labels=len(group),
+                            chronicle_unseen_with_near_value=sum(r["chronicle"]["near_value"] is not None for r in group),
                             **{feed: delivery_counts(r[feed] for r in group) for feed in feeds}))
     events = evidence["events"]
     issuer_values = {row["answer"] * scale for row in delivery}
@@ -327,7 +346,12 @@ def compare(evidence, chainlink):
     return dict(events=len(events), exact_matching_events=len(exact_events),
                 first_event=events[0], first_exact_event=next(iter(exact_events), None),
                 first=first, last=chainlink["issuer_labels"]["last"], labels=len(rows), feeds=feeds,
-                by_period=periods,
+                by_period=periods, near_value_bp=NEAR_VALUE_BP,
+                chronicle_unseen_near_values=[
+                    dict(label=r["label"], issuer_answer=r["answer"],
+                         **r["chronicle"]["near_value"]) for r in rows if r["chronicle"]["near_value"]],
+                by_period_unseen_without_near_value={
+                    p["year"]: p["chronicle"]["unseen"] - p["chronicle_unseen_with_near_value"] for p in periods},
                 paired_finalized_seconds=describe(differences), paired_without_successor=len(paired)-len(finalized),
                 baseline_at_activation=baseline, pre_activation_events=sum(
                     e["block"] < activation["block"] for e in evidence["events"]),

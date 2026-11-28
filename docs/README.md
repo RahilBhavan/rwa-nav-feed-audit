@@ -4,4 +4,4 @@
 - [Method](METHOD.md) defines clocks, denominators, cohorts and replay commands.
 - [Sources](SOURCES.md) lists the original publishers, capture times and digest manifests.
 - [Decisions](DECISIONS.md) records the initial gate and the USTB follow-up.
-- [Current quality review](QUALITY.md) records the previous independent assessment.
+- [Current quality review](QUALITY.md) records the independent round-four assessment (8/10 at `4cd7c98`).

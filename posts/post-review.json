@@ -7,7 +7,7 @@
   "copy_file_sha256": "1b8c1f0d76bb618bf0c1c38ceb706a14c91d92fbd34e59565bae9503ff3ecbc6",
   "standalone_chart": {
     "file": "../docs/ustb-gap.svg",
-    "sha256": "29ad83e6124f13add910fa7867975405abbbdf80dc74862f63570305cd66703d",
+    "sha256": "a4a9248add98bf9c7fd161a862563365910fa669a879d73b2b849009740d26e7",
     "visible_words": 20,
     "inspected_widths_px": [
       342,
@@ -25,16 +25,16 @@
       "unknown": 1
     },
     "rendered_png_sha256_by_width": {
-      "342": "e33c55445499b899b4dfcb48dad332870f66a400aea64d08a9cdcdea6944971b",
-      "360": "6f7d61d20781386eb12769978c109c53291055bbb704241b9faa788281d2e7db",
-      "390": "7db04c9ba47d5f7a726f476dca73e350eb22bdd0945112b29ffdffb4b0f78fe5",
-      "680": "37dacc7ae4ee8e5cc18e01f0781e148ac624867c728a957823060656cf65779c",
-      "1360": "4a0cf9c13b5baf12dc9395f413c43598e322ef5d488514d3dcb62a01c74512f8"
+      "342": "f9df8b8b48ba91a2ca8bb5b602010217700b49d16d4bcf4b5d55073e8fc31e23",
+      "360": "af8a80e4adaa6493bfad4c50d0ec367e0bffd7953d486eddb7dc351807c96ae4",
+      "390": "b7f6b02bd99343575da74ed7e271d384dd95a077c7620109b8d8d8f2c031a01a",
+      "680": "f1ef5b430ee4983a50cc02b6d61f184757a51baf61ac44d96df50eabcbdfe9d0",
+      "1360": "3a6775017065e9df35f94c16be9e1de6c08785cb20d341203598364687ddedca"
     },
     "renderer": "rsvg-convert 2.63.3, Cairo 1.18.6, Pango 1.58.2, HarfBuzz 14.6.0, Fontconfig 2.18.3",
     "design_review": "pending",
     "minimum_nominal_label_px_at_342": 14.08,
-    "text_check": "Agent visually inspected the exact librsvg exports. No clipped or colliding labels. The 588 dots read as a band at feed width.",
+    "text_check": "Agent visually inspected the exact librsvg exports at 342 and 680 px with the pinned Archivo and IBM Plex Sans files. The claim title wraps to two lines, no label is clipped or collides, and the 588 dots read as a band at feed width.",
     "alt_text": "Ethereum delivery history for 601 Superstate issuer value changes labelled 2024-06-27 through 2026-11-24. The first active post for 588 values fell on the next issuer value-change date and 4 fell one day after. 8 values were unseen by the pinned block. Timing for 1 is unknown because the pinned issuer history ends before the next value change. Issuer value-change dates are a proxy for valuation dates. Publication times are unknown. Each mark uses the original label date.",
     "palette_check": "Proofline tokens, literal SVG fill/stroke hex values and solid foreground/background contrast. Categories also use direct labels and distinct marks.",
     "ink_on_signal_contrast": 12.82,
@@ -43,7 +43,8 @@
       "Archivo-VF.ttf": "0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053",
       "IBMPlexSans-Regular.ttf": "975dcda37d80f038dcd143c22e33ca2d97a0cc5a929aace1c749153b0fe1afa5",
       "IBMPlexSans-SemiBold.ttf": "a20caf8286023a6a7a85e40b1d2a4ae9fc3e3b1f9eda8f4c542dd4986af67bb1"
-    }
+    },
+    "title": "588 of 601 USTB NAVs reached Chainlink the next NAV day"
   },
   "drafts": [
     {

@@ -6,7 +6,9 @@ Chainlink posted **588 of 601 USTB NAV values on the next date Superstate’s la
 
 ## Results
 
-In the [340-label shared window](docs/RESULTS.md#chronicle-comparison), Chainlink posted 337 values on the next NAV change date and the Chronicle consumer posted 236. The two feeds left one and 93 exact values unseen respectively.
+**The like-for-like comparison is 2026.** Across the [224 shared labels from January 1 to November 24, 2026](docs/RESULTS.md#chronicle-comparison), Chainlink posted 222 values on the next NAV change date and the Chronicle consumer posted 205. Exact values left unseen: 0 for Chainlink and 11 for Chronicle. Eight of Chronicle’s 11 have no write within 0.1 bp of the NAV, which fits a skipped label day. For the other three, Chronicle wrote a value 0.005 to 0.075 bp from the NAV on the successor date, so exact match counts them as unseen but they look like a precision or revision difference.
+
+The full 340-label window (July 16, 2025 to November 24, 2026) gives 337 and 236 on date, with one and 93 unseen. Read the 93 with care: 82 of them are 2025 labels (July 16 to November 18). Before November 11, 2025 (UTC) the Chronicle consumer wrote 216 values, none equal to any of the 601 USTB labels. They do not track the NAV: they range from $6.16 to $11.73 and 171 have two decimals or fewer. The 2025 labels therefore measure when that consumer began carrying the NAV, not missed deliveries by a NAV feed.
 
 **582 of 593** Chainlink changed answers posted on the literal next NYSE session date. Exactly one session elapsed for 584, including two Saturday posts. Issuer value-change dates approximate the valuation schedule. The issuer’s actual strike and publication times are unknown. Chainlink identifies its source as the Asset Manager API and names Superstate as the auditor in its directory.
 
@@ -54,7 +56,7 @@ Public repository: [RahilBhavan/rwa-nav-feed-audit](https://github.com/RahilBhav
 - [Method](docs/METHOD.md) defines the screen, clocks and extraction steps.
 - [Sources](docs/SOURCES.md) lists provenance, retrieval routes and capture hashes.
 - [Decisions](docs/DECISIONS.md) records the scope decisions.
-- [Current quality review](docs/QUALITY.md) records the independent assessment of the previous revision.
+- [Current quality review](docs/QUALITY.md) records the independent round-four review (8/10 at `4cd7c98`).
 
 ## Sources
 

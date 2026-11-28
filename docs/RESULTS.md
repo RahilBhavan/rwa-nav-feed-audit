@@ -95,10 +95,22 @@ Across **340 shared issuer NAV values** labelled July 16, 2025 through November 
 
 Chronicle posted earlier for 81 of the 246 pairs and later for 165, with a median paired difference of **2 hours 23 minutes later**. November 24’s value reached both feeds on November 25. Its successor is outside the pinned issuer series, so it is excluded from the paired timing summary and stays unknown in the date counts. No shared label was left-censored at activation. An unseen value means the exact issuer amount did not appear by the pin. Other writes can still occur in that period.
 
-| Shared label period | Labels | Chainlink on date / unseen | Chronicle on date / unseen |
-| --- | ---: | ---: | ---: |
-| Jul 16–Dec 31, 2025 | 116 | 115 / 1 | 31 / 82 |
-| Jan 1–Nov 24, 2026 | 224 | 222 / 0 | 205 / 11 |
+| Shared label period | Labels | Chainlink on date / unseen | Chronicle on date / unseen | Chronicle unseen with a near value |
+| --- | ---: | ---: | ---: | ---: |
+| Jul 16–Dec 31, 2025 | 116 | 115 / 1 | 31 / 82 | 0 of 82 |
+| Jan 1–Nov 24, 2026 | 224 | 222 / 0 | 205 / 11 | 3 of 11 |
+
+**The 2026 window is the like-for-like comparison:** 222 against 205 on the date, and 0 against 11 unseen. The 2025 labels mostly measure when Chronicle’s consumer began carrying the NAV. Eighty-two of the 93 unseen labels are 2025 labels (July 16 to November 18, 2025). Before November 11, 2025 (UTC) the consumer wrote 216 values, none equal to any of the 601 USTB labels. They range from $6.16 to $11.73 and 171 of them have two decimals or fewer, so they do not track the NAV.
+
+Exact match stays the primary rule. A **near value** is a Chronicle write within 0.1 bp of an unseen label’s NAV, posted from the label date through the successor date (New York time). Three of the eleven unseen 2026 values have one. Eight do not: the nearest write in or just after their window is 0.94 to 1.01 bp away, about one day of accrual, which fits a skipped label day (Jan 8, Jan 16, Jan 23, Feb 2, Feb 6, Feb 13, Feb 17 and Aug 26). None of the 82 unseen 2025 labels has a near value by this rule.
+
+| Label | Issuer NAV | Chronicle write | Difference | Chronicle posted (ET) | Successor date |
+| --- | ---: | ---: | ---: | --- | --- |
+| Oct 16, 2026 | 11.247678 | 11.247684 | +0.005 bp | Oct 19, 10:00:11 | Oct 19 |
+| Oct 30, 2026 | 11.263157 | 11.263072 | −0.075 bp | Nov 2, 03:37:35 | Nov 2 |
+| Nov 4, 2026 | 11.268694 | 11.268726 | +0.028 bp | Nov 5, 02:26:35 | Nov 5 |
+
+These three look like a precision or revision difference rather than a missed delivery, but the source trail does not establish the cause. The replay reports them as `chronicle_unseen_near_values`.
 
 The difference was concentrated in 2025. None of the 76 NAV values first labelled July 16 through October 31, 2025 appeared exactly in Chronicle’s consumer by the pin. The consumer did record values during that period. Its first write, on July 18 at 13:31:11 UTC, carried $6.16. The first exact match in the log history was $10.888154 on November 11, 2025 at 09:13:23 UTC. Over the full deployment-to-pin history, **655 of 877** events matched a finalized issuer value exactly, including repeated writes. The source trail does not identify the schedule, operating intent or value basis for the unmatched early writes.
 

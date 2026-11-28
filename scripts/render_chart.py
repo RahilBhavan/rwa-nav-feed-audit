@@ -11,7 +11,7 @@ from issuer_history import check
 INK = "#142E28"
 PAPER = "#F4F5EF"
 HIGHLIGHT = "#DFFF5E"
-WIDTH, HEIGHT = 680, 364
+WIDTH, HEIGHT = 680, 386
 LEFT, RIGHT = 350, 640
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
@@ -36,7 +36,8 @@ def render(report):
     def x(day):
         return LEFT + (RIGHT - LEFT) * (day - start).days / (end - start).days
 
-    title = f"Chainlink USTB: {counts['next_change']} of {len(rows)} on the next issuer NAV change date"
+    claim = f"{counts['next_change']} of {len(rows)}"
+    title = f"{claim} USTB NAVs reached Chainlink the next NAV day"
     alt = (f"Ethereum delivery history for {len(rows)} Superstate issuer value changes labelled {start} "
            f"through {end}. The first active post for {counts['next_change']} values fell on the next issuer "
            f"value-change date and {counts['after']} fell one day after. {counts['unseen']} values were "
@@ -50,23 +51,21 @@ def render(report):
         f'<desc id="description">{html.escape(alt)}</desc>',
         f'<rect width="{WIDTH}" height="{HEIGHT}" fill="{PAPER}"/>',
         f'<g fill="{INK}" font-family="IBM Plex Sans, DejaVu Sans, sans-serif">',
-        f'<text x="34" y="65" font-family="Archivo, DejaVu Sans, sans-serif" '
-        'font-weight="850" font-size="43">Chainlink USTB</text>',
+        f'<rect x="26" y="20" width="{12 * len(claim) + 80}" height="42" fill="{HIGHLIGHT}"/>',
+        f'<text x="34" y="54" font-family="Archivo, DejaVu Sans, sans-serif" '
+        f'font-weight="850" font-size="38">{claim} USTB NAVs reached</text>',
+        f'<text x="34" y="98" font-family="Archivo, DejaVu Sans, sans-serif" '
+        'font-weight="850" font-size="38">Chainlink the next NAV day</text>',
     ]
     bands = [
-        ("next_change", "Next NAV change", 122),
-        ("after", "Day after", 177),
-        ("unseen", "Unseen", 226),
-        ("unknown", "No successor", 275),
+        ("next_change", None, 160),
+        ("after", "Day after", 217),
+        ("unseen", "Unseen", 266),
+        ("unknown", "Pending", 315),
     ]
     for status, label_text, y in bands:
         body.append(f'<path d="M {LEFT} {y} H {RIGHT}" stroke="{INK}" opacity="0.22"/>')
-        if status == "next_change":
-            body.append(f'<rect x="26" y="{y - 34}" width="203" height="37" fill="{HIGHLIGHT}"/>')
-            body.append(f'<text x="34" y="{y - 1}" font-size="38" font-weight="750">'
-                        f'{counts[status]} of {len(rows)}</text>')
-            body.append(f'<text x="34" y="{y + 27}" font-size="28" font-weight="600">{label_text}</text>')
-        else:
+        if label_text:
             body.append(f'<text x="79" y="{y + 8}" font-size="30" text-anchor="end" '
                         f'font-weight="600">{counts[status]}</text>')
             body.append(f'<text x="96" y="{y + 8}" font-weight="600" font-size="28">{label_text}</text>')
@@ -88,8 +87,7 @@ def render(report):
         body.append('</g>')
     for day, anchor in ((start, "start"), (end, "end")):
         label = f"{MONTHS[day.month - 1]}’{day.year % 100:02d}"
-        body.append(f'<text x="{x(day):.2f}" y="319" font-size="28" text-anchor="{anchor}">{label}</text>')
-    body.append('<text x="34" y="319" font-size="28">Issuer labels</text>')
+        body.append(f'<text x="{x(day):.2f}" y="365" font-size="28" text-anchor="{anchor}">{label}</text>')
     return "\n".join(body + ["</g>", "</svg>", ""])
 
 
